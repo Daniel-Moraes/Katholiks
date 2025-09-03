@@ -286,7 +286,7 @@ lib/
 
 ---
 
-## 💰 **Modelo de Monetização**
+## 💰 **Modelo de Monetização (estimado, não sei ainda)**
 
 ### **Planos de Assinatura**
 - **🆓 Católico Básico**: Recursos fundamentais gratuitos
@@ -553,7 +553,7 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE.md](L
 - **Anonimização**: Analytics sem identificação pessoal
 - **Conformidade LGPD**: Totalmente aderente à legislação brasileira
 
----
+<!-- ---
 
 ## 📞 **Contato e Comunidade**
 
@@ -572,7 +572,7 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE.md](L
 ### **Comunidade de Desenvolvedores**
 - 💬 **Discord**: [Servidor da Comunidade](https://discord.gg/katholiks)
 - 👨‍💻 **GitHub**: [Repositório Oficial](https://github.com/katholiks/app)
-- 📚 **Wiki**: [Documentação Completa](https://wiki.katholiks.app)
+- 📚 **Wiki**: [Documentação Completa](https://wiki.katholiks.app) -->
 
 ---
 
@@ -602,14 +602,14 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE.md](L
 
 ### **Versão Atual**: 1.0.0-beta
 ### **Estado**: Em desenvolvimento ativo
-### **Plataformas**: Android (iOS em breve)
+### **Plataformas**: Android e iOS
 ### **Idiomas**: Português brasileiro (Latim planejado)
 
 ### **Próximos Milestones**
-- 🎯 **v1.0.0** (Março 2024): Launch público
-- 📖 **v1.1.0** (Maio 2024): Bíblia completa
-- ⛪ **v1.2.0** (Julho 2024): Missas regionais
-- 👥 **v2.0.0** (Setembro 2024): Recursos sociais
+- 🎯 **v1.0.0** (Março 2026): Launch público
+- 📖 **v1.1.0** (Maio 2026): Bíblia completa
+- ⛪ **v1.2.0** (Julho 2026): Missas regionais
+- 👥 **v2.0.0** (Setembro 2026): Recursos sociais
 
 ---
 
