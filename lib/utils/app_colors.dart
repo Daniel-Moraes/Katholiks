@@ -6,9 +6,11 @@ class AppColors {
   AppColors._();
 
   // 🟣 Cores Primárias - Tema Católico
-  static const Color primary = Color(0xFF6A1B9A); // Roxo católico
-  static const Color primaryLight = Color(0xFF9C4DCC); // Roxo claro
-  static const Color primaryDark = Color(0xFF4A148C); // Roxo escuro
+  static const Color primary = Color(0xFF334f57); // Roxo católico
+  static const Color primaryLight =
+      Color.fromARGB(255, 61, 111, 124); // Roxo claro
+  static const Color primaryDark =
+      Color.fromARGB(255, 33, 61, 68); // Roxo escuro
   static const Color primaryContainer = Color(0xFFE1BEE7); // Container primário
 
   // 🔵 Cores Secundárias - Complementares

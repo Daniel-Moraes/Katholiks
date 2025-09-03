@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:katholiks/utils/app_colors.dart';
 import '../services/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -59,7 +60,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.deepPurple,
+      backgroundColor: AppColors.primary,
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -82,7 +83,7 @@ class _SplashScreenState extends State<SplashScreen>
                 child: const Icon(
                   Icons.church,
                   size: 80,
-                  color: Colors.deepPurple,
+                  color: AppColors.primary,
                 ),
               ),
               const SizedBox(height: 32),

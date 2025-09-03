@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   static AuthService? _instance;
@@ -61,7 +62,61 @@ class AuthService {
   }
 
   Future<void> logout() async {
+    await GoogleSignIn().signOut();
     await _auth.signOut();
+  }
+
+  Future<bool> signInWithGoogle() async {
+    try {
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+      if (googleUser == null) {
+        // User canceled the sign-in
+        return false;
+      }
+
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase with the Google user credential
+      final UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
+
+      if (userCredential.user != null) {
+        final User user = userCredential.user!;
+
+        // Check if user document exists
+        final userDoc =
+            await _firestore.collection('users').doc(user.uid).get();
+
+        if (!userDoc.exists) {
+          // Create user document if it doesn't exist
+          await _firestore.collection('users').doc(user.uid).set({
+            'name': user.displayName ?? 'Usuário',
+            'email': user.email ?? '',
+            'createdAt': Timestamp.fromDate(DateTime.now()),
+            'provider': 'google',
+            'photoUrl': user.photoURL,
+          });
+        }
+
+        return true;
+      }
+
+      return false;
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    } catch (e) {
+      throw 'Erro ao fazer login com Google. Tente novamente.';
+    }
   }
 
   Future<bool> checkAuthStatus() async {
@@ -74,7 +129,7 @@ class AuthService {
     if (user != null) {
       try {
         await user.updateDisplayName(name);
-        await user.updateEmail(email);
+        await user.verifyBeforeUpdateEmail(email);
 
         await _firestore.collection('users').doc(user.uid).update({
           'name': name,

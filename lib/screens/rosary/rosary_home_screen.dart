@@ -4,6 +4,7 @@ import '../../models/rosary.dart';
 import '../../services/rosary_service.dart';
 import 'rosary_tutorial_screen.dart';
 import '../../widgets/custom_button.dart';
+import '../../widgets/rosary_icon.dart';
 
 class RosaryHomeScreen extends StatefulWidget {
   const RosaryHomeScreen({super.key});
@@ -17,6 +18,7 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
   final RosaryService _rosaryService = RosaryService.instance;
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -33,6 +35,18 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
+
+    // Inicializar o RosaryService para carregar as estatísticas
+    _initializeService();
+  }
+
+  Future<void> _initializeService() async {
+    await _rosaryService.initialize();
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -72,7 +86,6 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
     );
   }
 
-  /// 📱 Header com título e ícone
   Widget _buildHeader() {
     return Column(
       children: [
@@ -87,8 +100,7 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
                   color: Colors.white.withOpacity(0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.auto_awesome,
+                child: const RosaryIcon(
                   size: 60,
                   color: Colors.white,
                 ),
@@ -118,7 +130,6 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
     );
   }
 
-  /// 🌟 Mistério do dia
   Widget _buildTodaysMystery() {
     final todaysMystery = _rosaryService.getTodaysMystery();
     final mysteryName = _getMysteryName(todaysMystery);
@@ -196,19 +207,22 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
     );
   }
 
-  /// 📊 Estatísticas rápidas
   Widget _buildQuickStats() {
     return ListenableBuilder(
       listenable: _rosaryService,
       builder: (context, _) {
+        if (_isLoading) {
+          return _buildLoadingStats();
+        }
+
         final stats = _rosaryService.stats;
         return Row(
           children: [
             Expanded(
               child: _buildStatCard(
-                'Terços Rezados',
+                'Rezados',
                 '${stats.totalRosariesCompleted}',
-                Icons.auto_awesome,
+                const RosaryIcon(size: 24, color: AppColors.success),
                 AppColors.success,
               ),
             ),
@@ -217,7 +231,8 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
               child: _buildStatCard(
                 'Sequência',
                 '${stats.currentStreak} dias',
-                Icons.local_fire_department,
+                const Icon(Icons.local_fire_department,
+                    size: 24, color: AppColors.warning),
                 AppColors.warning,
               ),
             ),
@@ -226,7 +241,7 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
               child: _buildStatCard(
                 'Pontos',
                 '${stats.totalPoints}',
-                Icons.stars,
+                const Icon(Icons.stars, size: 24, color: AppColors.primary),
                 AppColors.primary,
               ),
             ),
@@ -236,9 +251,19 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
     );
   }
 
-  /// 📈 Card de estatística
-  Widget _buildStatCard(
-      String title, String value, IconData icon, Color color) {
+  Widget _buildLoadingStats() {
+    return Row(
+      children: [
+        Expanded(child: _buildLoadingStatCard()),
+        const SizedBox(width: 16),
+        Expanded(child: _buildLoadingStatCard()),
+        const SizedBox(width: 16),
+        Expanded(child: _buildLoadingStatCard()),
+      ],
+    );
+  }
+
+  Widget _buildLoadingStatCard() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -254,10 +279,57 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
       ),
       child: Column(
         children: [
-          Icon(
-            icon,
-            color: color,
-            size: 24,
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: Colors.grey.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: 40,
+            height: 20,
+            decoration: BoxDecoration(
+              color: Colors.grey.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            width: 60,
+            height: 12,
+            decoration: BoxDecoration(
+              color: Colors.grey.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String title, String value, Widget icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          SizedBox(
+            width: 24,
+            height: 24,
+            child: icon,
           ),
           const SizedBox(height: 8),
           Text(
@@ -293,7 +365,6 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
           text: isActive ? 'Continuar Terço' : 'Iniciar Terço',
           onPressed: () {
             if (isActive) {
-              // Continuar sessão existente
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -301,18 +372,14 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
                 ),
               );
             } else {
-              // Iniciar nova sessão
               _startNewSession();
             }
           },
-          backgroundColor: isActive ? AppColors.success : AppColors.primary,
-          icon: isActive ? Icons.play_arrow : Icons.auto_awesome,
         );
       },
     );
   }
 
-  /// 🎭 Seletor de mistérios
   Widget _buildMysterySelector() {
     return Container(
       width: double.infinity,
@@ -352,7 +419,6 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
     );
   }
 
-  /// 🏷️ Chip de mistério
   Widget _buildMysteryChip(MysteryType type) {
     final name = _getMysteryName(type);
     final color = _getMysteryColor(type);
@@ -389,7 +455,6 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
     );
   }
 
-  /// 🏆 Conquistas recentes
   Widget _buildAchievements() {
     return Container(
       width: double.infinity,
@@ -447,7 +512,6 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
     );
   }
 
-  /// 🚀 Iniciar nova sessão
   Future<void> _startNewSession({MysteryType? mysteryType}) async {
     try {
       await _rosaryService.startRosarySession(mysteryType: mysteryType);
@@ -472,7 +536,6 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
     }
   }
 
-  /// 🎭 Helper: Nome do mistério
   String _getMysteryName(MysteryType type) {
     switch (type) {
       case MysteryType.joyful:
@@ -486,7 +549,6 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
     }
   }
 
-  /// 🎨 Helper: Cor do mistério
   Color _getMysteryColor(MysteryType type) {
     switch (type) {
       case MysteryType.joyful:
@@ -500,7 +562,6 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
     }
   }
 
-  /// 🎯 Helper: Ícone do mistério
   IconData _getMysteryIcon(MysteryType type) {
     switch (type) {
       case MysteryType.joyful:
@@ -514,7 +575,6 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
     }
   }
 
-  /// 📝 Helper: Descrição do mistério
   String _getMysteryDescription(MysteryType type) {
     switch (type) {
       case MysteryType.joyful:

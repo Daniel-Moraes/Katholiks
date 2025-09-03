@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:katholiks/utils/app_colors.dart';
+import '../../widgets/rosary_icon.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -61,7 +63,7 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Katholiks'),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -86,7 +88,7 @@ class HomePage extends StatelessWidget {
                   children: [
                     const CircleAvatar(
                       radius: 30,
-                      backgroundColor: Colors.deepPurple,
+                      backgroundColor: AppColors.primary,
                       child: Icon(
                         Icons.person,
                         color: Colors.white,
@@ -103,7 +105,7 @@ class HomePage extends StatelessWidget {
                             style: Theme.of(context).textTheme.headlineSmall,
                           ),
                           Text(
-                            'Que a paz de Cristo esteja contigo',
+                            'Que a paz de Jesus esteja contigo',
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium
@@ -138,20 +140,21 @@ class HomePage extends StatelessWidget {
               children: [
                 _buildFeatureCard(
                   context,
-                  icon: Icons.auto_awesome,
+                  icon: const RosaryIcon(size: 40, color: AppColors.primary),
                   title: 'Santo Terço',
                   subtitle: 'Tutorial interativo',
-                  color: Colors.deepPurple,
+                  color: AppColors.primary,
                   onTap: () {
                     context.push('/rosary');
                   },
                 ),
                 _buildFeatureCard(
                   context,
-                  icon: Icons.favorite,
+                  icon: const Icon(Icons.favorite,
+                      size: 40, color: AppColors.error),
                   title: 'Orações',
                   subtitle: 'Momento de fé',
-                  color: Colors.red,
+                  color: AppColors.error,
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -161,7 +164,8 @@ class HomePage extends StatelessWidget {
                 ),
                 _buildFeatureCard(
                   context,
-                  icon: Icons.calendar_today,
+                  icon:
+                      Icon(Icons.calendar_today, size: 40, color: Colors.green),
                   title: 'Eventos',
                   subtitle: 'Próximas atividades',
                   color: Colors.green,
@@ -174,7 +178,7 @@ class HomePage extends StatelessWidget {
                 ),
                 _buildFeatureCard(
                   context,
-                  icon: Icons.church,
+                  icon: Icon(Icons.church, size: 40, color: Colors.orange),
                   title: 'Paróquias',
                   subtitle: 'Encontre igrejas',
                   color: Colors.orange,
@@ -195,7 +199,7 @@ class HomePage extends StatelessWidget {
 
   Widget _buildFeatureCard(
     BuildContext context, {
-    required IconData icon,
+    required Widget icon,
     required String title,
     required String subtitle,
     required Color color,
@@ -210,10 +214,10 @@ class HomePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 40,
-                color: color,
+              SizedBox(
+                width: 40,
+                height: 40,
+                child: icon,
               ),
               const SizedBox(height: 12),
               Text(
@@ -247,7 +251,7 @@ class ExplorePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Explorar'),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
       body: const Center(
@@ -284,7 +288,7 @@ class CommunityPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Comunidade'),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
       body: const Center(
@@ -321,7 +325,7 @@ class ProfilePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Perfil'),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -344,7 +348,7 @@ class ProfilePage extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 50,
-              backgroundColor: Colors.deepPurple,
+              backgroundColor: AppColors.primary,
               child: Icon(
                 Icons.person,
                 size: 60,

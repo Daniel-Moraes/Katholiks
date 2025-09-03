@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:katholiks/utils/app_colors.dart';
 
 class CustomButton extends StatelessWidget {
   final VoidCallback? onPressed;
@@ -30,7 +31,7 @@ class CustomButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? Colors.deepPurple,
+          backgroundColor: backgroundColor ?? AppColors.primary,
           foregroundColor: textColor ?? Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),

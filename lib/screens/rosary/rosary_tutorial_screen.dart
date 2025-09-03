@@ -4,6 +4,7 @@ import '../../utils/app_colors.dart';
 import '../../models/rosary.dart';
 import '../../services/rosary_service.dart';
 import '../../widgets/custom_button.dart';
+import '../../widgets/rosary_icon.dart';
 
 class RosaryTutorialScreen extends StatefulWidget {
   const RosaryTutorialScreen({super.key});
@@ -141,7 +142,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     );
   }
 
-  /// 📊 Indicador de progresso
   Widget _buildProgressIndicator(RosarySession session) {
     final progress = session.completedPrayers / session.totalPrayers;
 
@@ -204,7 +204,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     );
   }
 
-  /// 🔮 Mistério atual
   Widget _buildCurrentMystery(RosarySession session) {
     if (session.currentMystery >= session.mysteries.length) {
       return const SizedBox.shrink();
@@ -333,7 +332,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     );
   }
 
-  /// 🙏 Oração atual
   Widget _buildCurrentPrayer(RosarySession session) {
     final currentPrayerText = _getCurrentPrayerText(session);
 
@@ -369,15 +367,11 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
                       color: AppColors.primary.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      _getPrayerIcon(currentPrayerText),
-                      size: 40,
-                      color: AppColors.primary,
-                    ),
+                    child: _getPrayerIcon(session),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    _getPrayerTitle(currentPrayerText),
+                    _getPrayerTitle(session),
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -385,6 +379,10 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
                     ),
                     textAlign: TextAlign.center,
                   ),
+                  if (_shouldShowMysteryContext(session)) ...[
+                    const SizedBox(height: 8),
+                    _buildMysteryContext(session),
+                  ],
                   const SizedBox(height: 16),
                   Text(
                     currentPrayerText,
@@ -404,7 +402,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     );
   }
 
-  /// 🎮 Controles da oração
   Widget _buildPrayerControls(RosarySession session) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -461,7 +458,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     );
   }
 
-  /// 🎯 Botão de controle
   Widget _buildControlButton(
       String label, IconData icon, VoidCallback? onPressed) {
     return Column(
@@ -495,7 +491,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     );
   }
 
-  /// 🚀 Botão principal
   Widget _buildMainActionButton(RosarySession session) {
     return Column(
       children: [
@@ -526,7 +521,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     );
   }
 
-  /// 🚫 Quando não há sessão ativa
   Widget _buildNoSessionView() {
     return const Center(
       child: Column(
@@ -558,7 +552,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     );
   }
 
-  /// ⏭️ Próxima oração
   Future<void> _nextPrayer() async {
     final completed = await _rosaryService.nextPrayer();
 
@@ -611,7 +604,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     );
   }
 
-  /// 🎉 Dialog de conclusão
   void _showCompletionDialog() {
     showDialog(
       context: context,
@@ -640,32 +632,106 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     );
   }
 
-  /// 📝 Helpers para obter texto e ícones
-  String _getCurrentPrayerText(RosarySession session) {
-    // Lógica simplificada - em implementação real seria mais complexa
-    final progress = session.completedPrayers;
-
-    if (progress < 5) {
-      return 'Creio em Deus Pai todo-poderoso, criador do céu e da terra...';
-    } else if (progress % 12 == 5) {
-      return 'Pai nosso que estais nos céus, santificado seja o vosso nome...';
-    } else {
-      return 'Ave Maria, cheia de graça, o Senhor é convosco...';
+  bool _shouldShowMysteryContext(RosarySession session) {
+    if (session.prayerSteps.isEmpty ||
+        session.completedPrayers >= session.prayerSteps.length) {
+      return false;
     }
+    final currentStep = session.prayerSteps[session.completedPrayers];
+    return currentStep.isInMystery && currentStep.currentMystery != null;
   }
 
-  String _getPrayerTitle(String prayerText) {
-    if (prayerText.startsWith('Creio')) return 'Creio';
-    if (prayerText.startsWith('Pai')) return 'Pai Nosso';
-    if (prayerText.startsWith('Ave')) return 'Ave Maria';
-    return 'Oração';
+  Widget _buildMysteryContext(RosarySession session) {
+    if (!_shouldShowMysteryContext(session)) return const SizedBox.shrink();
+
+    final currentStep = session.prayerSteps[session.completedPrayers];
+    final mystery = currentStep.currentMystery!;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _getMysteryColor(session.mysteryType).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: _getMysteryColor(session.mysteryType).withOpacity(0.3),
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(
+                _getMysteryIcon(session.mysteryType),
+                size: 16,
+                color: _getMysteryColor(session.mysteryType),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '${currentStep.mysteryIndex + 1}° Mistério: ${mystery.title}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: _getMysteryColor(session.mysteryType),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (currentStep.prayerInMystery >= 0) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Ave Maria ${currentStep.prayerInMystery + 1} de 10',
+              style: TextStyle(
+                fontSize: 11,
+                color: _getMysteryColor(session.mysteryType).withOpacity(0.7),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
-  IconData _getPrayerIcon(String prayerText) {
-    if (prayerText.startsWith('Creio')) return Icons.church;
-    if (prayerText.startsWith('Pai')) return Icons.person;
-    if (prayerText.startsWith('Ave')) return Icons.favorite;
-    return Icons.auto_awesome;
+  String _getCurrentPrayerText(RosarySession session) {
+    if (session.prayerSteps.isNotEmpty &&
+        session.completedPrayers < session.prayerSteps.length) {
+      final currentStep = session.prayerSteps[session.completedPrayers];
+      return currentStep.type.text;
+    }
+    return PrayerTypeExpanded.aveMaria.text;
+  }
+
+  String _getPrayerTitle(RosarySession session) {
+    if (session.prayerSteps.isNotEmpty &&
+        session.completedPrayers < session.prayerSteps.length) {
+      final currentStep = session.prayerSteps[session.completedPrayers];
+      return currentStep.type.title;
+    }
+    return 'Ave Maria';
+  }
+
+  Widget _getPrayerIcon(RosarySession session) {
+    if (session.prayerSteps.isNotEmpty &&
+        session.completedPrayers < session.prayerSteps.length) {
+      final currentStep = session.prayerSteps[session.completedPrayers];
+      switch (currentStep.type) {
+        case PrayerTypeExpanded.creio:
+          return Icon(Icons.church, size: 40, color: AppColors.primary);
+        case PrayerTypeExpanded.paiNosso:
+          return Icon(Icons.person, size: 40, color: AppColors.primary);
+        case PrayerTypeExpanded.aveMaria:
+          return Icon(Icons.favorite, size: 40, color: AppColors.primary);
+        case PrayerTypeExpanded.gloria:
+          return Icon(Icons.star, size: 40, color: AppColors.primary);
+        case PrayerTypeExpanded.fatima:
+        case PrayerTypeExpanded.salveRainha:
+        case PrayerTypeExpanded.oracaoFinal:
+          return RosaryIcon(size: 40, color: AppColors.primary);
+      }
+    }
+    return RosaryIcon(size: 40, color: AppColors.primary);
   }
 
   String _getProgressMessage(RosarySession session) {

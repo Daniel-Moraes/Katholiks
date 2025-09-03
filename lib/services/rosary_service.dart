@@ -38,10 +38,26 @@ class RosaryService extends ChangeNotifier {
       final savedStats = await _firestoreService.loadUserStats();
       if (savedStats != null) {
         _stats = savedStats;
-        notifyListeners();
+      } else {
+        // Criar estatísticas iniciais para novos usuários
+        _stats = await _firestoreService.createInitialStats();
       }
+      notifyListeners();
     } catch (e) {
       print('Erro ao inicializar RosaryService: $e');
+      // Em caso de erro, usar estatísticas padrão
+      _stats = const RosaryStats(
+        totalRosariesCompleted: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        totalPrayerTime: Duration.zero,
+        mysteriesCompleted: {},
+        dailyGoals: {},
+        totalAchievements: 0,
+        totalPoints: 0,
+        averageSessionDuration: 0,
+      );
+      notifyListeners();
     }
   }
 
@@ -67,16 +83,18 @@ class RosaryService extends ChangeNotifier {
   Future<RosarySession> startRosarySession({MysteryType? mysteryType}) async {
     final selectedMystery = mysteryType ?? getTodaysMystery();
     final mysteries = _getMysteries(selectedMystery);
+    final prayerSteps = _generateRosarySequence(mysteries);
 
     _currentSession = RosarySession(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       startTime: DateTime.now(),
       mysteryType: selectedMystery,
       mysteries: mysteries,
+      prayerSteps: prayerSteps,
       currentMystery: 0,
       currentDecade: 0,
       currentPrayer: 0,
-      totalPrayers: _calculateTotalPrayers(),
+      totalPrayers: prayerSteps.length,
       completedPrayers: 0,
       achievedMilestones: [],
       status: RosarySessionStatus.inProgress,
@@ -240,24 +258,90 @@ class RosaryService extends ChangeNotifier {
     }
   }
 
-  int _calculateTotalPrayers() {
-    return 53; // 1 Creio + 1 Pai Nosso + 3 Ave + 5x(1 Pai Nosso + 10 Ave + 1 Glória) + orações finais
+  /// 📿 Gera a sequência completa do terço
+  List<RosaryPrayerStep> _generateRosarySequence(List<Mystery> mysteries) {
+    List<RosaryPrayerStep> steps = [];
+
+    // 1. Sinal da Cruz (implícito - não contabilizado)
+
+    // 2. Creio
+    steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.creio));
+
+    // 3. Pai Nosso inicial
+    steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.paiNosso));
+
+    // 4. 3 Ave Marias iniciais (pelas virtudes teologais)
+    for (int i = 0; i < 3; i++) {
+      steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.aveMaria));
+    }
+
+    // 5. Glória inicial
+    steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.gloria));
+
+    // 6. Para cada mistério (5 dezenas)
+    for (int mysteryIndex = 0;
+        mysteryIndex < mysteries.length;
+        mysteryIndex++) {
+      final mystery = mysteries[mysteryIndex];
+
+      // Pai Nosso da dezena
+      steps.add(RosaryPrayerStep(
+        type: PrayerTypeExpanded.paiNosso,
+        mysteryIndex: mysteryIndex,
+        prayerInMystery: 0,
+        mysteryReflection: mystery.reflection,
+        currentMystery: mystery,
+      ));
+
+      // 10 Ave Marias da dezena
+      for (int ave = 1; ave <= 10; ave++) {
+        steps.add(RosaryPrayerStep(
+          type: PrayerTypeExpanded.aveMaria,
+          mysteryIndex: mysteryIndex,
+          prayerInMystery: ave,
+          mysteryReflection: mystery.reflection,
+          currentMystery: mystery,
+        ));
+      }
+
+      // Glória da dezena
+      steps.add(RosaryPrayerStep(
+        type: PrayerTypeExpanded.gloria,
+        mysteryIndex: mysteryIndex,
+        prayerInMystery: 11,
+        currentMystery: mystery,
+      ));
+
+      // Oração de Fátima da dezena
+      steps.add(RosaryPrayerStep(
+        type: PrayerTypeExpanded.fatima,
+        mysteryIndex: mysteryIndex,
+        prayerInMystery: 12,
+        currentMystery: mystery,
+      ));
+    }
+
+    // 7. Salve Rainha final
+    steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.salveRainha));
+
+    // 8. Oração final
+    steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.oracaoFinal));
+
+    return steps;
   }
 
   void _updateCurrentPosition(RosarySession session) {
     final progress = session.completedPrayers;
+    final totalSteps = session.prayerSteps.length;
 
-    if (progress < 5) {
-      // Orações iniciais
-    } else if (progress < 55) {
-      // Dezenas dos mistérios
-      final decadeProgress = (progress - 5) ~/ 12;
-      session.copyWith(
-        currentMystery: decadeProgress.clamp(0, 4),
-        currentDecade: decadeProgress.clamp(0, 4),
-      );
-    } else {
-      // Orações finais
+    if (progress < totalSteps) {
+      final currentStep = session.prayerSteps[progress];
+      if (currentStep.isInMystery) {
+        session.copyWith(
+          currentMystery: currentStep.mysteryIndex,
+          currentDecade: currentStep.mysteryIndex,
+        );
+      }
     }
   }
 
@@ -310,7 +394,39 @@ class RosaryService extends ChangeNotifier {
       type: MysteryType.joyful,
       intentions: ['Pela humildade', 'Pelas vocações religiosas'],
     ),
-    // ... outros mistérios
+    Mystery(
+      id: 'joyful_2',
+      title: '2º Mistério Gozoso',
+      description: 'A Visitação de Nossa Senhora a Santa Isabel',
+      reflection: 'Maria se apressa em servir, levando Jesus em seu ventre.',
+      type: MysteryType.joyful,
+      intentions: ['Pelo amor ao próximo', 'Pela caridade'],
+    ),
+    Mystery(
+      id: 'joyful_3',
+      title: '3º Mistério Gozoso',
+      description: 'O Nascimento de Jesus em Belém',
+      reflection: 'Jesus nasce pobre, ensinando-nos o valor da simplicidade.',
+      type: MysteryType.joyful,
+      intentions: ['Pela pobreza de espírito', 'Pelas famílias'],
+    ),
+    Mystery(
+      id: 'joyful_4',
+      title: '4º Mistério Gozoso',
+      description: 'A Apresentação do Menino Jesus no Templo',
+      reflection: 'José e Maria cumprem a Lei, oferecendo Jesus a Deus.',
+      type: MysteryType.joyful,
+      intentions: ['Pela obediência', 'Pelos consagrados'],
+    ),
+    Mystery(
+      id: 'joyful_5',
+      title: '5º Mistério Gozoso',
+      description: 'A Perda e o Encontro do Menino Jesus no Templo',
+      reflection:
+          'Jesus nos ensina que devemos buscar sempre as coisas do Pai.',
+      type: MysteryType.joyful,
+      intentions: ['Pela sabedoria', 'Pelos jovens'],
+    ),
   ];
 
   static const List<Mystery> _sorrowfulMysteries = [
@@ -322,7 +438,38 @@ class RosaryService extends ChangeNotifier {
       type: MysteryType.sorrowful,
       intentions: ['Pelos pecadores', 'Pela conversão'],
     ),
-    // ... outros mistérios
+    Mystery(
+      id: 'sorrowful_2',
+      title: '2º Mistério Doloroso',
+      description: 'A Flagelação de Jesus',
+      reflection: 'Jesus é açoitado cruelmente para pagar nossos pecados.',
+      type: MysteryType.sorrowful,
+      intentions: ['Pela purificação', 'Pelos que sofrem'],
+    ),
+    Mystery(
+      id: 'sorrowful_3',
+      title: '3º Mistério Doloroso',
+      description: 'A Coroação de Espinhos',
+      reflection: 'Coroado com espinhos, Jesus é escarnecido como Rei.',
+      type: MysteryType.sorrowful,
+      intentions: ['Contra o orgulho', 'Pela humildade'],
+    ),
+    Mystery(
+      id: 'sorrowful_4',
+      title: '4º Mistério Doloroso',
+      description: 'Jesus Carrega a Cruz no Calvário',
+      reflection: 'Jesus carrega nossa cruz e nos ensina a carregar a nossa.',
+      type: MysteryType.sorrowful,
+      intentions: ['Pela paciência', 'Pelos aflitos'],
+    ),
+    Mystery(
+      id: 'sorrowful_5',
+      title: '5º Mistério Doloroso',
+      description: 'A Crucifixão e Morte de Jesus',
+      reflection: 'Jesus morre na cruz para nos dar a vida eterna.',
+      type: MysteryType.sorrowful,
+      intentions: ['Pela salvação', 'Pelos agonizantes'],
+    ),
   ];
 
   static const List<Mystery> _gloriousMysteries = [
@@ -334,7 +481,38 @@ class RosaryService extends ChangeNotifier {
       type: MysteryType.glorious,
       intentions: ['Pela fé', 'Pelos que perderam a esperança'],
     ),
-    // ... outros mistérios
+    Mystery(
+      id: 'glorious_2',
+      title: '2º Mistério Glorioso',
+      description: 'A Ascensão de Jesus ao Céu',
+      reflection: 'Jesus sobe aos céus para preparar lugar para nós.',
+      type: MysteryType.glorious,
+      intentions: ['Pela esperança', 'Pelos que partiram'],
+    ),
+    Mystery(
+      id: 'glorious_3',
+      title: '3º Mistério Glorioso',
+      description: 'A Vinda do Espírito Santo',
+      reflection: 'O Espírito Santo desce sobre Maria e os Apóstolos.',
+      type: MysteryType.glorious,
+      intentions: ['Pelos dons do Espírito', 'Pela Igreja'],
+    ),
+    Mystery(
+      id: 'glorious_4',
+      title: '4º Mistério Glorioso',
+      description: 'A Assunção de Nossa Senhora',
+      reflection: 'Maria é elevada ao céu em corpo e alma.',
+      type: MysteryType.glorious,
+      intentions: ['Pela pureza', 'Pela boa morte'],
+    ),
+    Mystery(
+      id: 'glorious_5',
+      title: '5º Mistério Glorioso',
+      description: 'A Coroação de Nossa Senhora',
+      reflection: 'Maria é coroada Rainha do céu e da terra.',
+      type: MysteryType.glorious,
+      intentions: ['Pela devoção mariana', 'Pela perseverança'],
+    ),
   ];
 
   static const List<Mystery> _luminousMysteries = [
@@ -346,6 +524,38 @@ class RosaryService extends ChangeNotifier {
       type: MysteryType.luminous,
       intentions: ['Pelos batizados', 'Pela renovação batismal'],
     ),
-    // ... outros mistérios
+    Mystery(
+      id: 'luminous_2',
+      title: '2º Mistério Luminoso',
+      description: 'As Bodas de Caná',
+      reflection:
+          'Jesus realiza seu primeiro milagre pela intercessão de Maria.',
+      type: MysteryType.luminous,
+      intentions: ['Pelas famílias', 'Pelos matrimônios'],
+    ),
+    Mystery(
+      id: 'luminous_3',
+      title: '3º Mistério Luminoso',
+      description: 'A Proclamação do Reino de Deus',
+      reflection: 'Jesus anuncia o Reino e chama à conversão.',
+      type: MysteryType.luminous,
+      intentions: ['Pela evangelização', 'Pelos missionários'],
+    ),
+    Mystery(
+      id: 'luminous_4',
+      title: '4º Mistério Luminoso',
+      description: 'A Transfiguração de Jesus',
+      reflection: 'Jesus revela sua glória divina aos discípulos.',
+      type: MysteryType.luminous,
+      intentions: ['Pela contemplação', 'Pelos contemplativos'],
+    ),
+    Mystery(
+      id: 'luminous_5',
+      title: '5º Mistério Luminoso',
+      description: 'A Instituição da Eucaristia',
+      reflection: 'Jesus se dá como alimento para a vida eterna.',
+      type: MysteryType.luminous,
+      intentions: ['Pela Eucaristia', 'Pelos sacerdotes'],
+    ),
   ];
 }

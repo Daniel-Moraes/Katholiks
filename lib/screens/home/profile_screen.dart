@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:katholiks/utils/app_colors.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -51,7 +52,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Editar Perfil'),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -66,7 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   const CircleAvatar(
                     radius: 60,
-                    backgroundColor: Colors.deepPurple,
+                    backgroundColor: AppColors.primary,
                     child: Icon(
                       Icons.person,
                       size: 80,
@@ -78,7 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     right: 0,
                     child: Container(
                       decoration: const BoxDecoration(
-                        color: Colors.deepPurple,
+                        color: AppColors.primary,
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
@@ -160,7 +161,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _saveProfile,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                   ),
                   child: _isLoading

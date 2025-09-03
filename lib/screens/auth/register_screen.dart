@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:katholiks/utils/app_colors.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_text_field.dart';
+import '../../widgets/google_sign_in_button.dart';
 import '../../services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -18,6 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
@@ -52,8 +55,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Erro ao criar conta. Tente novamente.'),
-              backgroundColor: Colors.red,
+              content: Text(
+                  'Falha na criação da conta. Verifique os dados informados.'),
+              backgroundColor: AppColors.error,
             ),
           );
         }
@@ -61,9 +65,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao criar conta. Tente novamente.'),
-            backgroundColor: Colors.red,
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -71,6 +75,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isGoogleLoading = true;
+    });
+
+    try {
+      final success = await AuthService.instance.signInWithGoogle();
+
+      if (success) {
+        if (mounted) {
+          context.go('/home');
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Login cancelado pelo usuário'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
         });
       }
     }
@@ -192,6 +236,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   isLoading: _isLoading,
                 ),
                 const SizedBox(height: 16),
+
+                // Divisor
+                const Row(
+                  children: [
+                    Expanded(child: Divider(color: Colors.grey)),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'ou',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                    Expanded(child: Divider(color: Colors.grey)),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Botão Google Sign-In
+                GoogleSignInButton(
+                  onPressed: _isGoogleLoading ? null : _handleGoogleSignIn,
+                  isLoading: _isGoogleLoading,
+                  text: 'Continuar com Google',
+                ),
+                const SizedBox(height: 16),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
