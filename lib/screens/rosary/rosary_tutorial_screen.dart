@@ -31,21 +31,13 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header com nome do mistério
                   _buildHeader(session),
                   const SizedBox(height: 20),
-
-                  // Card do mistério específico com progresso
                   _buildCurrentMysteryCard(session),
                   const SizedBox(height: 20),
-
-                  // Oração atual (removido o título separado)
-                  // Texto da oração com título incluído
                   Expanded(
                     child: _buildPrayerText(session),
                   ),
-
-                  // Botão principal
                   _buildMainActionButton(session),
                 ],
               ),
@@ -56,11 +48,9 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
     );
   }
 
-  /// 📱 Header com botões e nome do mistério
   Widget _buildHeader(RosarySession session) {
     return Column(
       children: [
-        // Botões de navegação com nome do mistério
         Row(
           children: [
             Container(
@@ -127,12 +117,10 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
     );
   }
 
-  /// 🔮 Card do mistério específico com progresso
   Widget _buildCurrentMysteryCard(RosarySession session) {
     final progress = session.completedPrayers / session.totalPrayers;
     final progressPercent = (progress * 100).toInt();
 
-    // Sempre mostrar o card de progresso, mesmo quando não estiver em um mistério
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -247,12 +235,10 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
     );
   }
 
-  /// Progresso específico do mistério
   Widget _buildMysterySpecificProgress(RosarySession session) {
     final currentStep = _getCurrentStep(session)!;
     final mysteryNumber = currentStep.mysteryIndex + 1;
 
-    // Contar apenas as Ave Marias no mistério atual
     final aveMariasInMystery = _countAveMariasInCurrentMystery(session);
     final mysteryProgress = aveMariasInMystery / 10;
 
@@ -318,7 +304,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
     );
   }
 
-  /// Progresso geral do terço
   Widget _buildGeneralProgress(RosarySession session) {
     final progress = session.completedPrayers / session.totalPrayers;
 
@@ -431,8 +416,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
     );
   }
 
-  /// � Botão principal de ação
-  /// 🎯 Botão principal de ação
   Widget _buildMainActionButton(RosarySession session) {
     return Container(
       width: double.infinity,
@@ -519,7 +502,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
     );
   }
 
-  /// 🔧 Métodos auxiliares
   String _getMysteryDisplayName(MysteryType type) {
     switch (type) {
       case MysteryType.joyful:
@@ -544,7 +526,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
   Future<void> _nextPrayer() async {
     final completed = await _rosaryService.nextPrayer();
 
-    // Feedback tátil
     HapticFeedback.lightImpact();
 
     if (completed && mounted) {
@@ -552,7 +533,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
     }
   }
 
-  /// ⏸️ Dialog de pausa
   void _showPauseDialog() {
     showDialog(
       context: context,
@@ -588,7 +568,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
     );
   }
 
-  /// 🎉 Dialog de conclusão
   void _showCompletionDialog() {
     showDialog(
       context: context,
@@ -652,7 +631,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
     return Theme.of(context).colorScheme.primary;
   }
 
-  /// 📖 Obter descrição do mistério atual
   String _getCurrentMysteryDescription(RosarySession session) {
     final currentStep = _getCurrentStep(session);
     if (currentStep?.currentMystery != null) {
@@ -661,17 +639,14 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
     return '';
   }
 
-  /// � Obter título do mistério atual
   String _getCurrentMysteryTitle(RosarySession session) {
     final currentStep = _getCurrentStep(session);
     if (currentStep?.currentMystery != null) {
       return currentStep!.currentMystery!.title;
     }
-    // Fallback para o nome genérico do tipo de mistério
     return _getMysteryDisplayName(session.mysteryType);
   }
 
-  /// �📿 Contar apenas as Ave Marias no mistério atual
   int _countAveMariasInCurrentMystery(RosarySession session) {
     final currentStep = _getCurrentStep(session);
     if (currentStep == null || !currentStep.isInMystery) {
@@ -681,7 +656,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
     int aveMariaCount = 0;
     final currentMysteryIndex = currentStep.mysteryIndex;
 
-    // Contar apenas as Ave Marias já completadas no mistério atual
     for (int i = 0; i < session.completedPrayers; i++) {
       final step = session.prayerSteps[i];
       if (step.mysteryIndex == currentMysteryIndex &&
@@ -690,7 +664,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
       }
     }
 
-    // Se a oração atual for Ave Maria e estivermos no mesmo mistério, incluir
     if (session.completedPrayers < session.prayerSteps.length) {
       final currentPrayerStep = session.prayerSteps[session.completedPrayers];
       if (currentPrayerStep.mysteryIndex == currentMysteryIndex &&
