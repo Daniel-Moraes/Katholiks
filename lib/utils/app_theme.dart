@@ -182,6 +182,11 @@ class AppTheme {
               borderRadius: BorderRadius.circular(12),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
           ),
         ),
 
@@ -301,13 +306,43 @@ class AppTheme {
       fontWeight: FontWeight.w400,
       color: AppColors.darkOnBackground,
     ),
+    displayMedium: TextStyle(
+      fontSize: 45,
+      fontWeight: FontWeight.w400,
+      color: AppColors.darkOnBackground,
+    ),
+    displaySmall: TextStyle(
+      fontSize: 36,
+      fontWeight: FontWeight.w400,
+      color: AppColors.darkOnBackground,
+    ),
     headlineLarge: TextStyle(
       fontSize: 32,
       fontWeight: FontWeight.w600,
       color: AppColors.darkOnBackground,
     ),
+    headlineMedium: TextStyle(
+      fontSize: 28,
+      fontWeight: FontWeight.w600,
+      color: AppColors.darkOnBackground,
+    ),
+    headlineSmall: TextStyle(
+      fontSize: 24,
+      fontWeight: FontWeight.w600,
+      color: AppColors.darkOnBackground,
+    ),
     titleLarge: TextStyle(
       fontSize: 22,
+      fontWeight: FontWeight.w500,
+      color: AppColors.darkOnBackground,
+    ),
+    titleMedium: TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
+      color: AppColors.darkOnBackground,
+    ),
+    titleSmall: TextStyle(
+      fontSize: 14,
       fontWeight: FontWeight.w500,
       color: AppColors.darkOnBackground,
     ),
@@ -321,6 +356,25 @@ class AppTheme {
       fontWeight: FontWeight.w400,
       color: AppColors.darkOnBackground,
     ),
-    // ... outros estilos com cores escuras
+    bodySmall: TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
+      color: AppColors.darkOnBackground,
+    ),
+    labelLarge: TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      color: AppColors.darkOnBackground,
+    ),
+    labelMedium: TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w500,
+      color: AppColors.darkOnBackground,
+    ),
+    labelSmall: TextStyle(
+      fontSize: 11,
+      fontWeight: FontWeight.w500,
+      color: AppColors.darkOnBackground,
+    ),
   );
 }

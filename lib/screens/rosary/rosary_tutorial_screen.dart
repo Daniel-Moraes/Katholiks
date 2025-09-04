@@ -86,13 +86,13 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
               _buildProgressIndicator(session),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
+                  // padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
                       _buildCurrentMystery(session),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 5),
                       _buildCurrentPrayer(session),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 15),
                       _buildPrayerControls(session),
                     ],
                   ),
@@ -212,21 +212,23 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     final mystery = session.mysteries[session.currentMystery];
 
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      // elevation: 4,
+      // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [
-              _getMysteryColor(mystery.type).withOpacity(0.1),
-              Colors.white,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF2D2D2D)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,7 +287,7 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
               secondChild: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: AppColors.background,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -349,15 +351,17 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF2D2D2D)
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.white,
-                    AppColors.primary.withOpacity(0.05),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
@@ -369,7 +373,7 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
                     ),
                     child: _getPrayerIcon(session),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 15),
                   Text(
                     _getPrayerTitle(session),
                     style: const TextStyle(
@@ -383,7 +387,7 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
                     const SizedBox(height: 8),
                     _buildMysteryContext(session),
                   ],
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 15),
                   Text(
                     currentPrayerText,
                     style: const TextStyle(
@@ -392,6 +396,8 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
                       height: 1.5,
                     ),
                     textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -718,20 +724,20 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
       final currentStep = session.prayerSteps[session.completedPrayers];
       switch (currentStep.type) {
         case PrayerTypeExpanded.creio:
-          return Icon(Icons.church, size: 40, color: AppColors.primary);
+          return const Icon(Icons.church, size: 40, color: AppColors.primary);
         case PrayerTypeExpanded.paiNosso:
-          return Icon(Icons.person, size: 40, color: AppColors.primary);
+          return const Icon(Icons.person, size: 40, color: AppColors.primary);
         case PrayerTypeExpanded.aveMaria:
-          return Icon(Icons.favorite, size: 40, color: AppColors.primary);
+          return const Icon(Icons.favorite, size: 40, color: AppColors.primary);
         case PrayerTypeExpanded.gloria:
-          return Icon(Icons.star, size: 40, color: AppColors.primary);
+          return const Icon(Icons.star, size: 40, color: AppColors.primary);
         case PrayerTypeExpanded.fatima:
         case PrayerTypeExpanded.salveRainha:
         case PrayerTypeExpanded.oracaoFinal:
-          return RosaryIcon(size: 40, color: AppColors.primary);
+          return const RosaryIcon(size: 40, color: AppColors.primary);
       }
     }
-    return RosaryIcon(size: 40, color: AppColors.primary);
+    return const RosaryIcon(size: 40, color: AppColors.primary);
   }
 
   String _getProgressMessage(RosarySession session) {

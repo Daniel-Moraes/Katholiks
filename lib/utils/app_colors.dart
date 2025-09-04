@@ -6,19 +6,17 @@ class AppColors {
   AppColors._();
 
   // 🟣 Cores Primárias - Tema Católico
-  static const Color primary = Color(0xFF334f57); // Roxo católico
-  static const Color primaryLight =
-      Color.fromARGB(255, 61, 111, 124); // Roxo claro
-  static const Color primaryDark =
-      Color.fromARGB(255, 33, 61, 68); // Roxo escuro
-  static const Color primaryContainer = Color(0xFFE1BEE7); // Container primário
+  static const Color primary = Color(0xFFFF9239); // Laranja primário
+  static const Color primaryLight = Color(0xFFFFB366); // Laranja claro
+  static const Color primaryDark = Color(0xFFE8670C); // Laranja escuro
+  static const Color primaryContainer = Color(0xFFFFE0CC); // Container primário
 
   // 🔵 Cores Secundárias - Complementares
-  static const Color secondary = Color(0xFF1976D2); // Azul católico
-  static const Color secondaryLight = Color(0xFF42A5F5); // Azul claro
-  static const Color secondaryDark = Color(0xFF0D47A1); // Azul escuro
+  static const Color secondary = Color(0xFFFF5631); // Vermelho secundário
+  static const Color secondaryLight = Color(0xFFFF7A5A); // Vermelho claro
+  static const Color secondaryDark = Color(0xFFE8290B); // Vermelho escuro
   static const Color secondaryContainer =
-      Color(0xFFBBDEFB); // Container secundário
+      Color(0xFFFFDDD6); // Container secundário
 
   // 🌟 Cores de Destaque
   static const Color accent = Color(0xFFFFB74D); // Dourado católico
@@ -50,7 +48,8 @@ class AppColors {
   // 🌙 Cores para Dark Theme
   static const Color darkBackground = Color(0xFF121212); // Fundo escuro
   static const Color darkSurface = Color(0xFF1E1E1E); // Superfície escura
-  static const Color darkPrimary = Color(0xFFAB47BC); // Primária escura
+  static const Color darkPrimary =
+      Color(0xFFFF9239); // Primária escura (mantém a mesma)
   static const Color darkOnBackground =
       Color(0xFFE0E0E0); // Texto sobre fundo escuro
   static const Color darkOnSurface =
