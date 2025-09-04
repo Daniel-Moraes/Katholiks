@@ -192,6 +192,9 @@ class RosaryStats {
 
 /// 📿 Orações completas do Santo Terço
 class RosaryPrayers {
+  static const String sinalDaCruz =
+      '''Em nome do Pai, e do Filho, e do Espírito Santo. Amém.''';
+
   static const String creio =
       '''Creio em Deus Pai todo-poderoso, criador do céu e da terra. E em Jesus Cristo, seu único Filho, nosso Senhor, que foi concebido pelo poder do Espírito Santo; nasceu da Virgem Maria; padeceu sob Pôncio Pilatos, foi crucificado, morto e sepultado; desceu à mansão dos mortos; ressuscitou ao terceiro dia; subiu aos céus, está sentado à direita de Deus Pai todo-poderoso, donde há de vir a julgar os vivos e os mortos. Creio no Espírito Santo, na Santa Igreja Católica, na comunhão dos santos, na remissão dos pecados, na ressurreição da carne e na vida eterna. Amém.''';
 
@@ -216,6 +219,7 @@ class RosaryPrayers {
 
 /// 🔮 Tipos de oração expandidos
 enum PrayerTypeExpanded {
+  sinalDaCruz('Sinal da Cruz', RosaryPrayers.sinalDaCruz),
   creio('Creio', RosaryPrayers.creio),
   paiNosso('Pai Nosso', RosaryPrayers.paiNosso),
   aveMaria('Ave Maria', RosaryPrayers.aveMaria),

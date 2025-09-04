@@ -293,6 +293,7 @@ class RosaryService extends ChangeNotifier {
     List<RosaryPrayerStep> steps = [];
 
     // 1. Sinal da Cruz (implícito - não contabilizado)
+    steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.sinalDaCruz));
 
     // 2. Creio
     steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.creio));

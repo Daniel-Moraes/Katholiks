@@ -58,10 +58,20 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.primaryGradient,
-        ),
+        decoration: Theme.of(context).brightness == Brightness.dark
+            ? BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.darkBackground,
+                    AppColors.darkSurface,
+                  ],
+                ),
+              )
+            : null,
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
@@ -97,24 +107,30 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.15)
+                      : Theme.of(context).colorScheme.primary.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const RosaryIcon(
+                child: RosaryIcon(
                   size: 60,
-                  color: Colors.white,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Theme.of(context).colorScheme.primary,
                 ),
               ),
             );
           },
         ),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           'Santo Terço',
           style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkOnBackground
+                : Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
@@ -122,7 +138,9 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
           'Reze com devoção e ganhe recompensas espirituais',
           style: TextStyle(
             fontSize: 16,
-            color: Colors.white.withOpacity(0.9),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkOnBackground.withOpacity(0.9)
+                : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
           ),
           textAlign: TextAlign.center,
         ),
@@ -140,11 +158,11 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Theme.of(context).shadowColor.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -171,21 +189,24 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Mistério de Hoje',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withOpacity(0.7),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       mysteryName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -196,9 +217,9 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
           const SizedBox(height: 16),
           Text(
             _getMysteryDescription(todaysMystery),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
               height: 1.4,
             ),
           ),
@@ -267,11 +288,11 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).shadowColor.withOpacity(0.05),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -283,7 +304,7 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.3),
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -292,7 +313,7 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
             width: 40,
             height: 20,
             decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.3),
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -301,7 +322,7 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
             width: 60,
             height: 12,
             decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.3),
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -314,11 +335,11 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).shadowColor.withOpacity(0.05),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -343,9 +364,9 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
           const SizedBox(height: 4),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             ),
             textAlign: TextAlign.center,
           ),
@@ -385,11 +406,11 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).shadowColor.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -398,12 +419,12 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Escolher Mistério',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 16),
@@ -460,11 +481,11 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).shadowColor.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -473,30 +494,30 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.emoji_events,
                 color: AppColors.warning,
                 size: 24,
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(
                 'Conquistas',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Continue rezando para desbloquear conquistas especiais!',
             style: TextStyle(
               fontSize: 14,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
           const SizedBox(height: 12),

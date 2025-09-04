@@ -99,6 +99,7 @@ class ProfilePage extends StatelessWidget {
                     title: 'Idioma',
                     subtitle: 'Português (Brasil)',
                     onTap: () {},
+                    isLast: true,
                   ),
                 ],
               ),
@@ -135,6 +136,7 @@ class ProfilePage extends StatelessWidget {
                     title: 'Histórico',
                     subtitle: 'Orações realizadas',
                     onTap: () {},
+                    isLast: true,
                   ),
                 ],
               ),
@@ -397,9 +399,8 @@ class ProfilePage extends StatelessWidget {
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected 
-                ? AppColors.primary 
-                : Theme.of(context).dividerColor,
+            color:
+                isSelected ? AppColors.primary : Theme.of(context).dividerColor,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -420,11 +421,11 @@ class ProfilePage extends StatelessWidget {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: isSelected
-                          ? AppColors.primary
-                          : Theme.of(context).colorScheme.onSurface,
-                      fontWeight: FontWeight.w600,
-                    ),
+                          color: isSelected
+                              ? AppColors.primary
+                              : Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                   Text(
                     subtitle,
