@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../models/rosary.dart';
+import '../models/achievement.dart';
 import 'rosary_firestore_service.dart';
 
 class RosaryService extends ChangeNotifier {
@@ -77,6 +78,35 @@ class RosaryService extends ChangeNotifier {
         return MysteryType.luminous;
       default:
         return MysteryType.joyful;
+    }
+  }
+
+  /// 🏆 Busca as conquistas do usuário ordenadas por data (mais recentes primeiro)
+  Future<List<Achievement>> getUserAchievements({int limit = 10}) async {
+    try {
+      final achievements = await _firestoreService.loadUserAchievements();
+      // Limita o número de conquistas retornadas se especificado
+      if (limit > 0 && achievements.length > limit) {
+        return achievements.take(limit).toList();
+      }
+      return achievements;
+    } catch (e) {
+      print('Erro ao buscar conquistas do usuário: $e');
+      return [];
+    }
+  }
+
+  /// 🏆 Busca conquistas por tipo específico
+  Future<List<Achievement>> getUserAchievementsByType(
+      AchievementType type) async {
+    try {
+      final achievements = await _firestoreService.loadUserAchievements();
+      return achievements
+          .where((achievement) => achievement.type == type)
+          .toList();
+    } catch (e) {
+      print('Erro ao buscar conquistas por tipo: $e');
+      return [];
     }
   }
 
@@ -388,7 +418,8 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'joyful_1',
       title: '1º Mistério Gozoso',
-      description: 'A Anunciação do Anjo à Nossa Senhora',
+      description:
+          'O anúncio do Anjo, o "Sim" de Nossa Senhora e o Verbo Divino que se fez carne e habitou entre nós.',
       reflection:
           'Contemplemos a humildade de Maria ao aceitar ser a Mãe de Deus.',
       type: MysteryType.joyful,
@@ -397,7 +428,8 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'joyful_2',
       title: '2º Mistério Gozoso',
-      description: 'A Visitação de Nossa Senhora a Santa Isabel',
+      description:
+          'A visita de Nossa Senhora à sua prima Santa Isabel e a santificação de João Batista.',
       reflection: 'Maria se apressa em servir, levando Jesus em seu ventre.',
       type: MysteryType.joyful,
       intentions: ['Pelo amor ao próximo', 'Pela caridade'],
@@ -405,7 +437,8 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'joyful_3',
       title: '3º Mistério Gozoso',
-      description: 'O Nascimento de Jesus em Belém',
+      description:
+          'O Nascimento do Menino Jesus naquela pobre gruta, em Belém.',
       reflection: 'Jesus nasce pobre, ensinando-nos o valor da simplicidade.',
       type: MysteryType.joyful,
       intentions: ['Pela pobreza de espírito', 'Pelas famílias'],
@@ -413,7 +446,8 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'joyful_4',
       title: '4º Mistério Gozoso',
-      description: 'A Apresentação do Menino Jesus no Templo',
+      description:
+          'A Apresentação do Menino Jesus no templo e o rito de purificação da Santíssima Virgem Maria.',
       reflection: 'José e Maria cumprem a Lei, oferecendo Jesus a Deus.',
       type: MysteryType.joyful,
       intentions: ['Pela obediência', 'Pelos consagrados'],
@@ -421,7 +455,8 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'joyful_5',
       title: '5º Mistério Gozoso',
-      description: 'A Perda e o Encontro do Menino Jesus no Templo',
+      description:
+          'A Perda e o reencontro do Menino Jesus no templo, em meio aos doutores da Lei.',
       reflection:
           'Jesus nos ensina que devemos buscar sempre as coisas do Pai.',
       type: MysteryType.joyful,
@@ -433,7 +468,7 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'sorrowful_1',
       title: '1º Mistério Doloroso',
-      description: 'A Agonia de Jesus no Horto',
+      description: 'A agonia de Nosso Senhor Jesus Cristo.',
       reflection: 'Jesus suou sangue pela angústia de nossos pecados.',
       type: MysteryType.sorrowful,
       intentions: ['Pelos pecadores', 'Pela conversão'],
@@ -441,7 +476,7 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'sorrowful_2',
       title: '2º Mistério Doloroso',
-      description: 'A Flagelação de Jesus',
+      description: 'A cruel flagelação de Jesus, atado à coluna.',
       reflection: 'Jesus é açoitado cruelmente para pagar nossos pecados.',
       type: MysteryType.sorrowful,
       intentions: ['Pela purificação', 'Pelos que sofrem'],
@@ -449,7 +484,7 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'sorrowful_3',
       title: '3º Mistério Doloroso',
-      description: 'A Coroação de Espinhos',
+      description: 'A coroação de espinhos de Nosso Senhor Jesus Cristo.',
       reflection: 'Coroado com espinhos, Jesus é escarnecido como Rei.',
       type: MysteryType.sorrowful,
       intentions: ['Contra o orgulho', 'Pela humildade'],
@@ -457,7 +492,8 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'sorrowful_4',
       title: '4º Mistério Doloroso',
-      description: 'Jesus Carrega a Cruz no Calvário',
+      description:
+          'Nosso Senhor Jesus Cristo carregando a pesadíssima cruz às costas, a caminho do Calvário.',
       reflection: 'Jesus carrega nossa cruz e nos ensina a carregar a nossa.',
       type: MysteryType.sorrowful,
       intentions: ['Pela paciência', 'Pelos aflitos'],
@@ -465,7 +501,7 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'sorrowful_5',
       title: '5º Mistério Doloroso',
-      description: 'A Crucifixão e Morte de Jesus',
+      description: 'A Crucifixão e morte de Nosso Senhor Jesus Cristo.',
       reflection: 'Jesus morre na cruz para nos dar a vida eterna.',
       type: MysteryType.sorrowful,
       intentions: ['Pela salvação', 'Pelos agonizantes'],
@@ -476,7 +512,7 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'glorious_1',
       title: '1º Mistério Glorioso',
-      description: 'A Ressurreição de Jesus',
+      description: 'A Ressurreição de Nosso Senhor Jesus Cristo.',
       reflection: 'Jesus venceu a morte e nos deu a esperança da vida eterna.',
       type: MysteryType.glorious,
       intentions: ['Pela fé', 'Pelos que perderam a esperança'],
@@ -484,7 +520,7 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'glorious_2',
       title: '2º Mistério Glorioso',
-      description: 'A Ascensão de Jesus ao Céu',
+      description: 'A Ascensão de Nosso Senhor Jesus Cristo ao Céu',
       reflection: 'Jesus sobe aos céus para preparar lugar para nós.',
       type: MysteryType.glorious,
       intentions: ['Pela esperança', 'Pelos que partiram'],
@@ -492,7 +528,8 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'glorious_3',
       title: '3º Mistério Glorioso',
-      description: 'A Vinda do Espírito Santo',
+      description:
+          'A Vinda do Espírito Santo sobre Nossa Senhora e os Apóstolos, reunidos no Cenáculo em Jerusalém.',
       reflection: 'O Espírito Santo desce sobre Maria e os Apóstolos.',
       type: MysteryType.glorious,
       intentions: ['Pelos dons do Espírito', 'Pela Igreja'],
@@ -500,7 +537,7 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'glorious_4',
       title: '4º Mistério Glorioso',
-      description: 'A Assunção de Nossa Senhora',
+      description: 'A Assunção de Gloriosa de Nossa Senhora ao Céu.',
       reflection: 'Maria é elevada ao céu em corpo e alma.',
       type: MysteryType.glorious,
       intentions: ['Pela pureza', 'Pela boa morte'],
@@ -508,7 +545,7 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'glorious_5',
       title: '5º Mistério Glorioso',
-      description: 'A Coroação de Nossa Senhora',
+      description: 'A Coroação de Nossa Senhora como Rainha do Céu e da terra.',
       reflection: 'Maria é coroada Rainha do céu e da terra.',
       type: MysteryType.glorious,
       intentions: ['Pela devoção mariana', 'Pela perseverança'],
@@ -519,7 +556,7 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'luminous_1',
       title: '1º Mistério Luminoso',
-      description: 'O Batismo de Jesus no Jordão',
+      description: 'O Batismo de Nosso Senhor Jesus Cristo.',
       reflection: 'Jesus se manifesta como Filho amado do Pai.',
       type: MysteryType.luminous,
       intentions: ['Pelos batizados', 'Pela renovação batismal'],
@@ -527,7 +564,8 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'luminous_2',
       title: '2º Mistério Luminoso',
-      description: 'As Bodas de Caná',
+      description:
+          'O milagre acontecido nas Bodas de Caná da Galileia por intercessão da Virgem Santíssima.',
       reflection:
           'Jesus realiza seu primeiro milagre pela intercessão de Maria.',
       type: MysteryType.luminous,
@@ -536,7 +574,7 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'luminous_3',
       title: '3º Mistério Luminoso',
-      description: 'A Proclamação do Reino de Deus',
+      description: 'O anúncio do Reino dos Céus e o chamado à conversão.',
       reflection: 'Jesus anuncia o Reino e chama à conversão.',
       type: MysteryType.luminous,
       intentions: ['Pela evangelização', 'Pelos missionários'],
@@ -544,7 +582,8 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'luminous_4',
       title: '4º Mistério Luminoso',
-      description: 'A Transfiguração de Jesus',
+      description:
+          'A Transfiguração de Nosso Senhor Jesus Cristo, no Monte Tabor.',
       reflection: 'Jesus revela sua glória divina aos discípulos.',
       type: MysteryType.luminous,
       intentions: ['Pela contemplação', 'Pelos contemplativos'],
@@ -552,7 +591,7 @@ class RosaryService extends ChangeNotifier {
     Mystery(
       id: 'luminous_5',
       title: '5º Mistério Luminoso',
-      description: 'A Instituição da Eucaristia',
+      description: 'A Instituição do Santíssimo Sacramento da Eucaristia.',
       reflection: 'Jesus se dá como alimento para a vida eterna.',
       type: MysteryType.luminous,
       intentions: ['Pela Eucaristia', 'Pelos sacerdotes'],

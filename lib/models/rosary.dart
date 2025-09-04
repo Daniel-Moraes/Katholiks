@@ -1,3 +1,5 @@
+import 'achievement.dart';
+
 /// 📿 Modelo para representar uma oração do terço
 class Prayer {
   final String id;
@@ -147,43 +149,6 @@ enum RosarySessionStatus {
   paused,
   completed,
   abandoned,
-}
-
-/// 🏆 Conquistas do usuário
-class Achievement {
-  final String id;
-  final String title;
-  final String description;
-  final String iconName;
-  final AchievementType type;
-  final int requiredCount;
-  final DateTime unlockedAt;
-  final int points;
-
-  const Achievement({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.iconName,
-    required this.type,
-    required this.requiredCount,
-    required this.unlockedAt,
-    required this.points,
-  });
-}
-
-/// 🏆 Tipos de conquistas
-enum AchievementType {
-  firstRosary, // Primeiro terço
-  dailyStreak, // Sequência diária
-  weeklyGoal, // Meta semanal
-  monthlyGoal, // Meta mensal
-  mysteryMaster, // Domínio de mistérios
-  speedPrayer, // Oração rápida
-  contemplative, // Oração contemplativa
-  dedication, // Dedicação
-  consistency, // Consistência
-  milestones, // Marcos importantes
 }
 
 /// 📊 Estatísticas do usuário

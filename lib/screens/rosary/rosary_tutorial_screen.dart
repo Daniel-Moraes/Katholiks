@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../utils/app_colors.dart';
 import '../../models/rosary.dart';
 import '../../services/rosary_service.dart';
-import '../../widgets/custom_button.dart';
-import '../../widgets/rosary_icon.dart';
 
 class RosaryTutorialScreen extends StatefulWidget {
   const RosaryTutorialScreen({super.key});
@@ -13,66 +10,13 @@ class RosaryTutorialScreen extends StatefulWidget {
   State<RosaryTutorialScreen> createState() => _RosaryTutorialScreenState();
 }
 
-class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
-    with TickerProviderStateMixin {
+class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
   final RosaryService _rosaryService = RosaryService.instance;
-
-  late AnimationController _progressController;
-  late AnimationController _prayerController;
-  late Animation<double> _progressAnimation;
-  late Animation<double> _prayerAnimation;
-
-  bool _isPlaying = false;
-  bool _showReflection = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initAnimations();
-  }
-
-  void _initAnimations() {
-    _progressController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    _prayerController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-
-    _progressAnimation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(
-      parent: _progressController,
-      curve: Curves.easeOutCubic,
-    ));
-
-    _prayerAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1,
-    ).animate(CurvedAnimation(
-      parent: _prayerController,
-      curve: Curves.elasticOut,
-    ));
-
-    _prayerController.forward();
-  }
-
-  @override
-  void dispose() {
-    _progressController.dispose();
-    _prayerController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: _buildAppBar(),
+      backgroundColor: Theme.of(context).colorScheme.background,
       body: ListenableBuilder(
         listenable: _rosaryService,
         builder: (context, _) {
@@ -81,251 +25,461 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
             return _buildNoSessionView();
           }
 
-          return Column(
-            children: [
-              _buildProgressIndicator(session),
-              Expanded(
-                child: SingleChildScrollView(
-                  // padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      _buildCurrentMystery(session),
-                      const SizedBox(height: 5),
-                      _buildCurrentPrayer(session),
-                      const SizedBox(height: 15),
-                      _buildPrayerControls(session),
-                    ],
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header com nome do mistério
+                  _buildHeader(session),
+                  const SizedBox(height: 20),
+
+                  // Card do mistério específico com progresso
+                  _buildCurrentMysteryCard(session),
+                  const SizedBox(height: 20),
+
+                  // Oração atual (removido o título separado)
+                  // Texto da oração com título incluído
+                  Expanded(
+                    child: _buildPrayerText(session),
                   ),
-                ),
+
+                  // Botão principal
+                  _buildMainActionButton(session),
+                ],
               ),
-            ],
+            ),
           );
         },
       ),
     );
   }
 
-  /// 📱 AppBar personalizada
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: AppColors.primary,
-      elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
-        onPressed: () => Navigator.pop(context),
-      ),
-      title: const Text(
-        'Santo Terço',
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      actions: [
-        ListenableBuilder(
-          listenable: _rosaryService,
-          builder: (context, _) {
-            final session = _rosaryService.currentSession;
-            if (session?.status == RosarySessionStatus.inProgress) {
-              return IconButton(
-                icon: const Icon(Icons.pause, color: Colors.white),
+  /// 📱 Header com botões e nome do mistério
+  Widget _buildHeader(RosarySession session) {
+    return Column(
+      children: [
+        // Botões de navegação com nome do mistério
+        Row(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  size: 20,
+                ),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                _getMysteryDisplayName(session.mysteryType),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: IconButton(
+                icon: Icon(
+                  Icons.pause,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  size: 20,
+                ),
                 onPressed: () {
                   _rosaryService.pauseSession();
                   _showPauseDialog();
                 },
-              );
-            }
-            return const SizedBox.shrink();
-          },
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildProgressIndicator(RosarySession session) {
+  /// 🔮 Card do mistério específico com progresso
+  Widget _buildCurrentMysteryCard(RosarySession session) {
     final progress = session.completedPrayers / session.totalPrayers;
+    final progressPercent = (progress * 100).toInt();
 
+    // Sempre mostrar o card de progresso, mesmo quando não estiver em um mistério
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: AppColors.primaryGradient,
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: _getMysteryColor(session.mysteryType).withOpacity(0.2),
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+            color: _getMysteryColor(session.mysteryType).withOpacity(0.1),
+            blurRadius: 20,
+            spreadRadius: 0,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         children: [
+          // Header com progresso geral
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Progresso: ${(progress * 100).toInt()}%',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color:
+                      _getMysteryColor(session.mysteryType).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color:
+                        _getMysteryColor(session.mysteryType).withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  _getCurrentMysteryTitle(session),
+                  style: TextStyle(
+                    color: _getMysteryColor(session.mysteryType),
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              Text(
-                '${session.completedPrayers}/${session.totalPrayers}',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
-                  fontSize: 14,
+              const Spacer(),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color:
+                      _getMysteryColor(session.mysteryType).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color:
+                        _getMysteryColor(session.mysteryType).withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  '$progressPercent%',
+                  style: TextStyle(
+                    color: _getMysteryColor(session.mysteryType),
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          AnimatedBuilder(
-            animation: _progressAnimation,
-            builder: (context, child) {
-              return LinearProgressIndicator(
-                value: progress * _progressAnimation.value,
-                backgroundColor: Colors.white.withOpacity(0.3),
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                minHeight: 8,
-              );
-            },
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _getProgressMessage(session),
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.8),
-              fontSize: 12,
+
+          // Descrição do mistério atual (se disponível)
+          if (_getCurrentMysteryDescription(session).isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _getMysteryColor(session.mysteryType).withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _getMysteryColor(session.mysteryType).withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                _getCurrentMysteryDescription(session),
+                style: TextStyle(
+                  color:
+                      Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                  fontSize: 13,
+                  height: 1.4,
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
-          ),
+          ],
+
+          const SizedBox(height: 12),
+
+          // Verificar se está em um mistério para mostrar progresso específico
+          if (_getCurrentStep(session)?.isInMystery == true &&
+              _getCurrentStep(session)?.currentMystery != null) ...[
+            _buildMysterySpecificProgress(session),
+            const SizedBox(height: 12),
+          ],
+
+          // Barra de progresso geral (sempre mostrar)
+          _buildGeneralProgress(session),
         ],
       ),
     );
   }
 
-  Widget _buildCurrentMystery(RosarySession session) {
-    if (session.currentMystery >= session.mysteries.length) {
-      return const SizedBox.shrink();
-    }
+  /// Progresso específico do mistério
+  Widget _buildMysterySpecificProgress(RosarySession session) {
+    final currentStep = _getCurrentStep(session)!;
+    final mysteryNumber = currentStep.mysteryIndex + 1;
 
-    final mystery = session.mysteries[session.currentMystery];
+    // Contar apenas as Ave Marias no mistério atual
+    final aveMariasInMystery = _countAveMariasInCurrentMystery(session);
+    final mysteryProgress = aveMariasInMystery / 10;
 
-    return Card(
-      // elevation: 4,
-      // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              '$mysteryNumberº Mistério:',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              '$aveMariasInMystery/10 Ave-Marias',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Barra de progresso com background fixo
+        Container(
+          width: double.infinity,
+          height: 8,
+          decoration: BoxDecoration(
+            color:
+                Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.6),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: FractionallySizedBox(
+            alignment: Alignment.centerLeft,
+            widthFactor: mysteryProgress,
+            child: Container(
+              height: 8,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    _getMysteryColor(session.mysteryType),
+                    _getMysteryColor(session.mysteryType).withOpacity(0.8),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(4),
+                boxShadow: [
+                  BoxShadow(
+                    color:
+                        _getMysteryColor(session.mysteryType).withOpacity(0.3),
+                    blurRadius: 8,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Progresso geral do terço
+  Widget _buildGeneralProgress(RosarySession session) {
+    final progress = session.completedPrayers / session.totalPrayers;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Progresso Geral:',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              '${session.completedPrayers} de ${session.totalPrayers} orações',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 8),
+        // Barra de progresso geral com background fixo
+        Container(
+          width: double.infinity,
+          height: 6,
+          decoration: BoxDecoration(
+            color:
+                Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.6),
+            borderRadius: BorderRadius.circular(3),
+          ),
+          child: FractionallySizedBox(
+            alignment: Alignment.centerLeft,
+            widthFactor: progress,
+            child: Container(
+              height: 6,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    _getMysteryColor(session.mysteryType).withOpacity(0.7),
+                    _getMysteryColor(session.mysteryType).withOpacity(0.5),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPrayerText(RosarySession session) {
+    final currentPrayerText = _getCurrentPrayerText(session);
+
+    return SingleChildScrollView(
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? const Color(0xFF2D2D2D)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: _getMysteryColor(session.mysteryType).withOpacity(0.2),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 20,
-              offset: const Offset(0, 8),
+              spreadRadius: 0,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: _getMysteryColor(mystery.type).withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    _getMysteryIcon(mystery.type),
-                    color: _getMysteryColor(mystery.type),
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        mystery.title,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        mystery.description,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            AnimatedCrossFade(
-              duration: const Duration(milliseconds: 300),
-              crossFadeState: _showReflection
-                  ? CrossFadeState.showSecond
-                  : CrossFadeState.showFirst,
-              firstChild: CustomButton(
-                text: 'Ver Reflexão',
-                onPressed: () => setState(() => _showReflection = true),
-                backgroundColor: _getMysteryColor(mystery.type),
-                icon: Icons.psychology,
+            // Título da oração em negrito
+            Text(
+              _getPrayerTitle(session),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
               ),
-              secondChild: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(
-                          Icons.psychology,
-                          color: AppColors.primary,
-                          size: 20,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Reflexão',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      mystery.reflection,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                        height: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: () => setState(() => _showReflection = false),
-                      child: const Text('Ocultar'),
-                    ),
-                  ],
-                ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            // Texto da oração
+            Text(
+              currentPrayerText,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontSize: 17,
+                height: 1.5,
+                fontWeight: FontWeight.w400,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// � Botão principal de ação
+  /// 🎯 Botão principal de ação
+  Widget _buildMainActionButton(RosarySession session) {
+    return Container(
+      width: double.infinity,
+      height: 50,
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            _getMysteryColor(session.mysteryType),
+            _getMysteryColor(session.mysteryType).withOpacity(0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: _getMysteryColor(session.mysteryType).withOpacity(0.4),
+            blurRadius: 20,
+            spreadRadius: 0,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: _nextPrayer,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(32),
+          ),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.check_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
+            SizedBox(width: 12),
+            Text(
+              'Rezei',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
               ),
             ),
           ],
@@ -334,223 +488,30 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     );
   }
 
-  Widget _buildCurrentPrayer(RosarySession session) {
-    final currentPrayerText = _getCurrentPrayerText(session);
-
-    return AnimatedBuilder(
-      animation: _prayerAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _prayerAnimation.value,
-          child: Card(
-            elevation: 6,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? const Color(0xFF2D2D2D)
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: _getPrayerIcon(session),
-                  ),
-                  const SizedBox(height: 15),
-                  Text(
-                    _getPrayerTitle(session),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  if (_shouldShowMysteryContext(session)) ...[
-                    const SizedBox(height: 8),
-                    _buildMysteryContext(session),
-                  ],
-                  const SizedBox(height: 15),
-                  Text(
-                    currentPrayerText,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: AppColors.textSecondary,
-                      height: 1.5,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPrayerControls(RosarySession session) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildControlButton(
-                'Anterior',
-                Icons.skip_previous,
-                session.completedPrayers > 0 ? () => _previousPrayer() : null,
-              ),
-              _buildMainActionButton(session),
-              _buildControlButton(
-                'Próxima',
-                Icons.skip_next,
-                () => _nextPrayer(),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildControlButton(
-                'Audio',
-                _isPlaying ? Icons.volume_off : Icons.volume_up,
-                () => setState(() => _isPlaying = !_isPlaying),
-              ),
-              _buildControlButton(
-                'Pausar',
-                Icons.pause,
-                () {
-                  _rosaryService.pauseSession();
-                  _showPauseDialog();
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildControlButton(
-      String label, IconData icon, VoidCallback? onPressed) {
-    return Column(
-      children: [
-        ElevatedButton(
-          onPressed: onPressed,
-          style: ElevatedButton.styleFrom(
-            shape: const CircleBorder(),
-            padding: const EdgeInsets.all(16),
-            backgroundColor:
-                onPressed != null ? AppColors.surface : AppColors.textSecondary,
-            elevation: 2,
-          ),
-          child: Icon(
-            icon,
-            color:
-                onPressed != null ? AppColors.primary : AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: onPressed != null
-                ? AppColors.textPrimary
-                : AppColors.textSecondary,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMainActionButton(RosarySession session) {
-    return Column(
-      children: [
-        ElevatedButton(
-          onPressed: _nextPrayer,
-          style: ElevatedButton.styleFrom(
-            shape: const CircleBorder(),
-            padding: const EdgeInsets.all(24),
-            backgroundColor: AppColors.primary,
-            elevation: 4,
-          ),
-          child: const Icon(
-            Icons.done,
-            color: Colors.white,
-            size: 32,
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Rezei',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildNoSessionView() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.error_outline,
             size: 80,
-            color: AppColors.textSecondary,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
             'Nenhuma sessão ativa',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             'Volte à tela inicial para começar um terço',
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
         ],
@@ -558,13 +519,30 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     );
   }
 
+  /// 🔧 Métodos auxiliares
+  String _getMysteryDisplayName(MysteryType type) {
+    switch (type) {
+      case MysteryType.joyful:
+        return 'Mistérios Gozosos';
+      case MysteryType.sorrowful:
+        return 'Mistérios Dolorosos';
+      case MysteryType.glorious:
+        return 'Mistérios Gloriosos';
+      case MysteryType.luminous:
+        return 'Mistérios Luminosos';
+    }
+  }
+
+  RosaryPrayerStep? _getCurrentStep(RosarySession session) {
+    if (session.prayerSteps.isEmpty ||
+        session.completedPrayers >= session.prayerSteps.length) {
+      return null;
+    }
+    return session.prayerSteps[session.completedPrayers];
+  }
+
   Future<void> _nextPrayer() async {
     final completed = await _rosaryService.nextPrayer();
-
-    // Animações de feedback
-    _prayerController.reset();
-    _prayerController.forward();
-    _progressController.forward();
 
     // Feedback tátil
     HapticFeedback.lightImpact();
@@ -574,22 +552,22 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     }
   }
 
-  /// ⏮️ Oração anterior (implementação futura)
-  void _previousPrayer() {
-    // TODO: Implementar volta para oração anterior
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Funcionalidade em desenvolvimento')),
-    );
-  }
-
   /// ⏸️ Dialog de pausa
   void _showPauseDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Terço Pausado'),
-        content: const Text(
-            'Sua oração foi pausada. Você pode continuar quando estiver pronto.'),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Terço Pausado',
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+        ),
+        content: Text(
+          'Sua oração foi pausada. Você pode continuar quando estiver pronto.',
+          style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+        ),
         actions: [
           TextButton(
             onPressed: () {
@@ -610,91 +588,42 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     );
   }
 
+  /// 🎉 Dialog de conclusão
   void _showCompletionDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Row(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
           children: [
-            Icon(Icons.celebration, color: AppColors.success),
-            SizedBox(width: 8),
-            Text('Parabéns!'),
+            const Icon(Icons.celebration, color: Colors.amber),
+            const SizedBox(width: 8),
+            Text('Parabéns!',
+                style:
+                    TextStyle(color: Theme.of(context).colorScheme.onSurface)),
           ],
         ),
-        content: const Text(
-            'Você completou o Santo Terço! Que Nossa Senhora interceda por suas intenções.'),
+        content: Text(
+          'Você completou o Santo Terço! Que Nossa Senhora interceda por suas intenções.',
+          style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+        ),
         actions: [
-          CustomButton(
-            text: 'Finalizar',
+          ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               Navigator.pop(context);
             },
-            backgroundColor: AppColors.success,
-          ),
-        ],
-      ),
-    );
-  }
-
-  bool _shouldShowMysteryContext(RosarySession session) {
-    if (session.prayerSteps.isEmpty ||
-        session.completedPrayers >= session.prayerSteps.length) {
-      return false;
-    }
-    final currentStep = session.prayerSteps[session.completedPrayers];
-    return currentStep.isInMystery && currentStep.currentMystery != null;
-  }
-
-  Widget _buildMysteryContext(RosarySession session) {
-    if (!_shouldShowMysteryContext(session)) return const SizedBox.shrink();
-
-    final currentStep = session.prayerSteps[session.completedPrayers];
-    final mystery = currentStep.currentMystery!;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: _getMysteryColor(session.mysteryType).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: _getMysteryColor(session.mysteryType).withOpacity(0.3),
-        ),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Icon(
-                _getMysteryIcon(session.mysteryType),
-                size: 16,
-                color: _getMysteryColor(session.mysteryType),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '${currentStep.mysteryIndex + 1}° Mistério: ${mystery.title}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: _getMysteryColor(session.mysteryType),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (currentStep.prayerInMystery >= 0) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Ave Maria ${currentStep.prayerInMystery + 1} de 10',
-              style: TextStyle(
-                fontSize: 11,
-                color: _getMysteryColor(session.mysteryType).withOpacity(0.7),
-              ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.amber,
             ),
-          ],
+            child: const Text(
+              'Finalizar',
+              style: TextStyle(color: Colors.black),
+            ),
+          ),
         ],
       ),
     );
@@ -718,59 +647,58 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     return 'Ave Maria';
   }
 
-  Widget _getPrayerIcon(RosarySession session) {
-    if (session.prayerSteps.isNotEmpty &&
-        session.completedPrayers < session.prayerSteps.length) {
-      final currentStep = session.prayerSteps[session.completedPrayers];
-      switch (currentStep.type) {
-        case PrayerTypeExpanded.creio:
-          return const Icon(Icons.church, size: 40, color: AppColors.primary);
-        case PrayerTypeExpanded.paiNosso:
-          return const Icon(Icons.person, size: 40, color: AppColors.primary);
-        case PrayerTypeExpanded.aveMaria:
-          return const Icon(Icons.favorite, size: 40, color: AppColors.primary);
-        case PrayerTypeExpanded.gloria:
-          return const Icon(Icons.star, size: 40, color: AppColors.primary);
-        case PrayerTypeExpanded.fatima:
-        case PrayerTypeExpanded.salveRainha:
-        case PrayerTypeExpanded.oracaoFinal:
-          return const RosaryIcon(size: 40, color: AppColors.primary);
+  Color _getMysteryColor(MysteryType type) {
+    // Usando as cores do tema do app para todos os mistérios
+    return Theme.of(context).colorScheme.primary;
+  }
+
+  /// 📖 Obter descrição do mistério atual
+  String _getCurrentMysteryDescription(RosarySession session) {
+    final currentStep = _getCurrentStep(session);
+    if (currentStep?.currentMystery != null) {
+      return currentStep!.currentMystery!.description;
+    }
+    return '';
+  }
+
+  /// � Obter título do mistério atual
+  String _getCurrentMysteryTitle(RosarySession session) {
+    final currentStep = _getCurrentStep(session);
+    if (currentStep?.currentMystery != null) {
+      return currentStep!.currentMystery!.title;
+    }
+    // Fallback para o nome genérico do tipo de mistério
+    return _getMysteryDisplayName(session.mysteryType);
+  }
+
+  /// �📿 Contar apenas as Ave Marias no mistério atual
+  int _countAveMariasInCurrentMystery(RosarySession session) {
+    final currentStep = _getCurrentStep(session);
+    if (currentStep == null || !currentStep.isInMystery) {
+      return 0;
+    }
+
+    int aveMariaCount = 0;
+    final currentMysteryIndex = currentStep.mysteryIndex;
+
+    // Contar apenas as Ave Marias já completadas no mistério atual
+    for (int i = 0; i < session.completedPrayers; i++) {
+      final step = session.prayerSteps[i];
+      if (step.mysteryIndex == currentMysteryIndex &&
+          step.type == PrayerTypeExpanded.aveMaria) {
+        aveMariaCount++;
       }
     }
-    return const RosaryIcon(size: 40, color: AppColors.primary);
-  }
 
-  String _getProgressMessage(RosarySession session) {
-    final progress = session.completedPrayers / session.totalPrayers;
-    if (progress < 0.2) return 'Começando com fé';
-    if (progress < 0.5) return 'Continuando com devoção';
-    if (progress < 0.8) return 'Quase terminando';
-    return 'Finalizando com amor';
-  }
-
-  Color _getMysteryColor(MysteryType type) {
-    switch (type) {
-      case MysteryType.joyful:
-        return AppColors.success;
-      case MysteryType.sorrowful:
-        return AppColors.error;
-      case MysteryType.glorious:
-        return AppColors.warning;
-      case MysteryType.luminous:
-        return AppColors.primary;
+    // Se a oração atual for Ave Maria e estivermos no mesmo mistério, incluir
+    if (session.completedPrayers < session.prayerSteps.length) {
+      final currentPrayerStep = session.prayerSteps[session.completedPrayers];
+      if (currentPrayerStep.mysteryIndex == currentMysteryIndex &&
+          currentPrayerStep.type == PrayerTypeExpanded.aveMaria) {
+        aveMariaCount++;
+      }
     }
-  }
 
-  IconData _getMysteryIcon(MysteryType type) {
-    switch (type) {
-      case MysteryType.joyful:
-        return Icons.child_friendly;
-      case MysteryType.sorrowful:
-        return Icons.favorite;
-      case MysteryType.glorious:
-        return Icons.wb_sunny;
-      case MysteryType.luminous:
-        return Icons.lightbulb;
-    }
+    return aveMariaCount;
   }
 }
