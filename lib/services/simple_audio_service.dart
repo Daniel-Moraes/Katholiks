@@ -180,22 +180,30 @@ class SimpleAudioService {
 
   // Métodos específicos para orações do terço
   Future<void> playAveMaria() async {
-    await playAssetAudio('audio/rosary/ave-maria.wav');
+    await playAssetAudio('audio/rosary/Charon/ave-maria.wav');
   }
 
   Future<void> playPaiNosso() async {
-    await playAssetAudio('audio/rosary/pai-nosso.wav');
+    await playAssetAudio('audio/rosary/Charon/pai-nosso.wav');
   }
 
   Future<void> playGloriaAoPai() async {
-    await playAssetAudio('audio/rosary/gloria-ao-pai.wav');
+    await playAssetAudio('audio/rosary/Charon/gloria-ao-pai.wav');
   }
 
   Future<void> playSinalDaCruz() async {
-    await playAssetAudio('audio/rosary/sinal-da-cruz.wav');
+    await playAssetAudio('audio/rosary/Charon/sinal-da-cruz.wav');
   }
 
   Future<void> playCreio() async {
-    await playAssetAudio('audio/rosary/creio.wav');
+    await playAssetAudio('audio/rosary/Charon/creio.wav');
+  }
+
+  Future<void> playFatima() async {
+    await playAssetAudio('audio/rosary/Charon/fatima.wav');
+  }
+
+  Future<void> playSalveRainha() async {
+    await playAssetAudio('audio/rosary/Charon/salve-rainha.wav');
   }
 }

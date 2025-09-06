@@ -356,8 +356,6 @@ class RosaryService extends ChangeNotifier {
 
     steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.salveRainha));
 
-    steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.oracaoFinal));
-
     return steps;
   }
 

@@ -11,7 +11,8 @@ class RosaryTutorialScreen extends StatefulWidget {
   State<RosaryTutorialScreen> createState() => _RosaryTutorialScreenState();
 }
 
-class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
+class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
+    with TickerProviderStateMixin {
   final RosaryService _rosaryService = RosaryService.instance;
   final SimpleAudioService _audioService = SimpleAudioService();
   Duration _audioDuration = Duration.zero;
@@ -19,10 +20,18 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
   DateTime? _playStartTime;
   bool _wasPlayingLastCheck = false;
   bool _autoPlayEnabled = false;
+  late AnimationController _progressController;
 
   @override
   void initState() {
     super.initState();
+    _progressController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1), // Duração inicial, será sobrescrita
+    )..addListener(() {
+        setState(() {});
+      });
+
     _setupAudioListeners();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -41,6 +50,7 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
 
   @override
   void dispose() {
+    _progressController.dispose();
     super.dispose();
   }
 
@@ -68,9 +78,14 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
           ? _getPrayerTitle(_rosaryService.currentSession!)
           : 'Ave Maria';
       _audioDuration = _getPrayerDuration(prayerTitle);
+
+      _progressController.duration = _audioDuration;
+      _progressController.forward(from: 0.0);
     }
 
     if (!isCurrentlyPlaying && _wasPlayingLastCheck) {
+      _progressController.stop();
+
       if (_audioPosition >= _audioDuration) {
         if (_autoPlayEnabled && _rosaryService.currentSession != null) {
           Future.delayed(const Duration(milliseconds: 800), () async {
@@ -84,6 +99,7 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
               setState(() {
                 _audioPosition = Duration.zero;
                 _playStartTime = null;
+                _progressController.reset();
               });
             }
           });
@@ -108,17 +124,21 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
   Duration _getPrayerDuration(String prayerTitle) {
     switch (prayerTitle.toLowerCase()) {
       case 'ave maria':
-        return const Duration(seconds: 19);
+        return const Duration(seconds: 17);
       case 'pai nosso':
-        return const Duration(seconds: 31);
+        return const Duration(seconds: 25);
       case 'glória ao pai':
         return const Duration(seconds: 7);
       case 'sinal da cruz':
         return const Duration(seconds: 4);
-      case 'creio em deus pai':
-        return const Duration(seconds: 47);
+      case 'creio':
+        return const Duration(seconds: 37);
+      case 'oração de fátima':
+        return const Duration(seconds: 10);
+      case 'salve rainha':
+        return const Duration(seconds: 37);
       default:
-        return const Duration(seconds: 19);
+        return const Duration(seconds: 0);
     }
   }
 
@@ -134,27 +154,43 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
             return _buildNoSessionView();
           }
 
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                top: 20,
-                left: 16,
-                right: 16,
-                bottom: 0,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(session),
-                  const SizedBox(height: 20),
-                  _buildCurrentMysteryCard(session),
-                  const SizedBox(height: 20),
-                  Expanded(
-                    child: _buildPrayerText(session),
+          return Scaffold(
+            body: Column(
+              children: [
+                SafeArea(
+                  bottom: false,
+                  child: Container(
+                    color: Theme.of(context).colorScheme.background,
+                    padding: const EdgeInsets.only(
+                      top: 20,
+                      left: 16,
+                      right: 16,
+                      bottom: 10,
+                    ),
+                    child: _buildHeader(session),
                   ),
-                  _buildBottomControlsSection(session),
-                ],
-              ),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      top: 10,
+                      bottom: 20,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildCurrentMysteryCard(session),
+                        const SizedBox(height: 15),
+                        _buildPrayerText(session),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
+                  ),
+                ),
+                _buildBottomControlsSection(session),
+              ],
             ),
           );
         },
@@ -444,52 +480,50 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
   Widget _buildPrayerText(RosarySession session) {
     final currentPrayerText = _getCurrentPrayerText(session);
 
-    return SingleChildScrollView(
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: _getMysteryColor(session.mysteryType).withOpacity(0.15),
-            width: 1.5,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: _getMysteryColor(session.mysteryType).withOpacity(0.15),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            spreadRadius: 0,
+            offset: const Offset(0, 4),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 20,
-              spreadRadius: 0,
-              offset: const Offset(0, 4),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            _getPrayerTitle(session),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
             ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Text(
-              _getPrayerTitle(session),
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface,
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.5,
-              ),
-              textAlign: TextAlign.center,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 5),
+          Text(
+            currentPrayerText,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 17,
+              height: 1.6,
+              fontWeight: FontWeight.w400,
+              letterSpacing: 0.2,
             ),
-            const SizedBox(height: 24),
-            Text(
-              currentPrayerText,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface,
-                fontSize: 17,
-                height: 1.6,
-                fontWeight: FontWeight.w400,
-                letterSpacing: 0.2,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -498,100 +532,77 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
     final prayerTitle = _getPrayerTitle(session);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      width: double.infinity,
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 10,
+        bottom: MediaQuery.of(context).padding.bottom + 20,
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Theme.of(context).colorScheme.surface.withOpacity(0.95),
-            Theme.of(context).colorScheme.surface,
+            Colors.transparent,
+            Theme.of(context).brightness == Brightness.dark
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.3),
+            Theme.of(context).brightness == Brightness.dark
+                ? Colors.black.withOpacity(0.6)
+                : Colors.black.withOpacity(0.6),
           ],
+          stops: const [0.0, 0.4, 1.0],
         ),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(25),
-          topRight: Radius.circular(25),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 25,
-            offset: const Offset(0, -8),
-          ),
-        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(height: 10),
           Container(
-            height: 4,
-            margin: const EdgeInsets.symmetric(horizontal: 24),
+            height: 6,
             decoration: BoxDecoration(
-              color:
-                  Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.6),
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(3),
             ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: _audioDuration.inMilliseconds > 0
-                  ? (_audioPosition.inMilliseconds /
-                          _audioDuration.inMilliseconds)
-                      .clamp(0.0, 1.0)
-                  : 0.0,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      _getMysteryColor(session.mysteryType),
-                      _getMysteryColor(session.mysteryType).withOpacity(0.8),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _getMysteryColor(session.mysteryType)
-                          .withOpacity(0.3),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: _progressController.value,
+                backgroundColor: Theme.of(context)
+                    .colorScheme
+                    .surfaceVariant
+                    .withOpacity(0.4),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  _getMysteryColor(session.mysteryType),
                 ),
+                minHeight: 6,
               ),
             ),
           ),
           const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  _formatDuration(_audioPosition),
-                  style: TextStyle(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(0.6),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                _formatDuration(_audioPosition),
+                style: TextStyle(
+                  color:
+                      Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
                 ),
-                Text(
-                  _formatDuration(_audioDuration),
-                  style: TextStyle(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(0.6),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
+              ),
+              Text(
+                _formatDuration(_audioDuration),
+                style: TextStyle(
+                  color:
+                      Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 5),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -610,7 +621,7 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
               _buildNavigationButton(
                 icon: Icons.skip_previous,
                 onTap: _previousPrayer,
-                isSecondary: true,
+                isSecondary: false,
               ),
               Container(
                 width: 55,
@@ -667,9 +678,7 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
       onTap: onTap,
       child: Icon(
         icon,
-        color: isActive
-            ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+        color: isActive ? Theme.of(context).colorScheme.primary : Colors.white,
         size: size,
       ),
     );
@@ -877,12 +886,17 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
     try {
       if (_audioService.isPlaying) {
         await _audioService.pause();
+        _progressController.stop();
         setState(() {});
         return;
       }
 
       if (_audioService.currentAudio != null && !_audioService.isPlaying) {
         await _audioService.resume();
+        // Retomar animação do ponto atual
+        if (_progressController.value < 1.0) {
+          _progressController.forward();
+        }
       } else {
         await _forcePlayPrayerAudio(prayerTitle);
       }
@@ -925,6 +939,12 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen> {
           break;
         case 'glória':
           await _audioService.playGloriaAoPai();
+          break;
+        case 'oração de fátima':
+          await _audioService.playFatima();
+          break;
+        case 'salve rainha':
+          await _audioService.playSalveRainha();
           break;
         default:
           return;

@@ -190,7 +190,6 @@ class RosaryStats {
   }
 }
 
-/// 📿 Orações completas do Santo Terço
 class RosaryPrayers {
   static const String sinalDaCruz =
       '''Em nome do Pai, e do Filho, e do Espírito Santo. Amém.''';
@@ -208,13 +207,10 @@ class RosaryPrayers {
       '''Glória ao Pai, ao Filho e ao Espírito Santo. Como era no princípio, agora e sempre. Amém.''';
 
   static const String fatima =
-      '''Ó meu Jesus, perdoai-nos, livrai-nos do fogo do inferno, levai as almas todas para o céu, principalmente aquelas que mais precisarem da vossa misericórdia.''';
+      '''Ó meu Jesus, perdoai-nos, livrai-nos do fogo do inferno, levai as almas todas para o céu e socorrei principalmente aquelas que mais precisarem da vossa misericórdia.''';
 
   static const String salveRainha =
       '''Salve, Rainha, Mãe de misericórdia, vida, doçura e esperança nossa, salve! A vós bradamos, os degredados filhos de Eva; a vós suspiramos, gemendo e chorando neste vale de lágrimas. Eia, pois, advogada nossa, esses vossos olhos misericordiosos a nós volvei; e depois deste desterro mostrai-nos Jesus, bendito fruto do vosso ventre, ó clemente, ó piedosa, ó doce sempre Virgem Maria! Rogai por nós, Santa Mãe de Deus, para que sejamos dignos das promessas de Cristo. Amém.''';
-
-  static const String oracaoFinal =
-      '''Ó Deus, cujo Filho Unigênito, por sua vida, morte e ressurreição, nos obteve os prêmios da salvação eterna, concedei-nos, nós vos pedimos, que, meditando estes mistérios do Santíssimo Rosário da bem-aventurada Virgem Maria, imitemos o que eles contêm e alcancemos o que eles prometem. Por Cristo, nosso Senhor. Amém.''';
 }
 
 /// 🔮 Tipos de oração expandidos
@@ -225,8 +221,7 @@ enum PrayerTypeExpanded {
   aveMaria('Ave Maria', RosaryPrayers.aveMaria),
   gloria('Glória', RosaryPrayers.gloria),
   fatima('Oração de Fátima', RosaryPrayers.fatima),
-  salveRainha('Salve Rainha', RosaryPrayers.salveRainha),
-  oracaoFinal('Oração Final', RosaryPrayers.oracaoFinal);
+  salveRainha('Salve Rainha', RosaryPrayers.salveRainha);
 
   const PrayerTypeExpanded(this.title, this.text);
   final String title;
