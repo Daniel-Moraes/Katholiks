@@ -28,7 +28,6 @@ class RosaryService extends ChangeNotifier {
     averageSessionDuration: 0,
   );
 
-  // Getters
   RosarySession? get currentSession => _currentSession;
   RosaryStats get stats => _stats;
   bool get isSessionActive =>
@@ -40,13 +39,11 @@ class RosaryService extends ChangeNotifier {
       if (savedStats != null) {
         _stats = savedStats;
       } else {
-        // Criar estatísticas iniciais para novos usuários
         _stats = await _firestoreService.createInitialStats();
       }
       notifyListeners();
     } catch (e) {
       print('Erro ao inicializar RosaryService: $e');
-      // Em caso de erro, usar estatísticas padrão
       _stats = const RosaryStats(
         totalRosariesCompleted: 0,
         currentStreak: 0,
@@ -81,11 +78,9 @@ class RosaryService extends ChangeNotifier {
     }
   }
 
-  /// 🏆 Busca as conquistas do usuário ordenadas por data (mais recentes primeiro)
   Future<List<Achievement>> getUserAchievements({int limit = 10}) async {
     try {
       final achievements = await _firestoreService.loadUserAchievements();
-      // Limita o número de conquistas retornadas se especificado
       if (limit > 0 && achievements.length > limit) {
         return achievements.take(limit).toList();
       }
@@ -96,7 +91,6 @@ class RosaryService extends ChangeNotifier {
     }
   }
 
-  /// 🏆 Busca conquistas por tipo específico
   Future<List<Achievement>> getUserAchievementsByType(
       AchievementType type) async {
     try {
@@ -186,9 +180,7 @@ class RosaryService extends ChangeNotifier {
 
     final newCompleted = _currentSession!.completedPrayers - 1;
 
-    // Não permitir voltar antes da primeira oração
     if (newCompleted < 0) return false;
-
     final newSession = _currentSession!.copyWith(
       completedPrayers: newCompleted,
     );
@@ -309,34 +301,26 @@ class RosaryService extends ChangeNotifier {
     }
   }
 
-  /// 📿 Gera a sequência completa do terço
   List<RosaryPrayerStep> _generateRosarySequence(List<Mystery> mysteries) {
     List<RosaryPrayerStep> steps = [];
 
-    // 1. Sinal da Cruz (implícito - não contabilizado)
     steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.sinalDaCruz));
 
-    // 2. Creio
     steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.creio));
 
-    // 3. Pai Nosso inicial
     steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.paiNosso));
 
-    // 4. 3 Ave Marias iniciais (pelas virtudes teologais)
     for (int i = 0; i < 3; i++) {
       steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.aveMaria));
     }
 
-    // 5. Glória inicial
     steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.gloria));
 
-    // 6. Para cada mistério (5 dezenas)
     for (int mysteryIndex = 0;
         mysteryIndex < mysteries.length;
         mysteryIndex++) {
       final mystery = mysteries[mysteryIndex];
 
-      // Pai Nosso da dezena
       steps.add(RosaryPrayerStep(
         type: PrayerTypeExpanded.paiNosso,
         mysteryIndex: mysteryIndex,
@@ -345,7 +329,6 @@ class RosaryService extends ChangeNotifier {
         currentMystery: mystery,
       ));
 
-      // 10 Ave Marias da dezena
       for (int ave = 1; ave <= 10; ave++) {
         steps.add(RosaryPrayerStep(
           type: PrayerTypeExpanded.aveMaria,
@@ -356,7 +339,6 @@ class RosaryService extends ChangeNotifier {
         ));
       }
 
-      // Glória da dezena
       steps.add(RosaryPrayerStep(
         type: PrayerTypeExpanded.gloria,
         mysteryIndex: mysteryIndex,
@@ -364,7 +346,6 @@ class RosaryService extends ChangeNotifier {
         currentMystery: mystery,
       ));
 
-      // Oração de Fátima da dezena
       steps.add(RosaryPrayerStep(
         type: PrayerTypeExpanded.fatima,
         mysteryIndex: mysteryIndex,
@@ -373,10 +354,8 @@ class RosaryService extends ChangeNotifier {
       ));
     }
 
-    // 7. Salve Rainha final
     steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.salveRainha));
 
-    // 8. Oração final
     steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.oracaoFinal));
 
     return steps;
