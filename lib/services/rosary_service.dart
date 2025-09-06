@@ -181,6 +181,27 @@ class RosaryService extends ChangeNotifier {
     return false;
   }
 
+  bool previousPrayer() {
+    if (_currentSession == null) return false;
+
+    final newCompleted = _currentSession!.completedPrayers - 1;
+
+    // Não permitir voltar antes da primeira oração
+    if (newCompleted < 0) return false;
+
+    final newSession = _currentSession!.copyWith(
+      completedPrayers: newCompleted,
+    );
+
+    _updateCurrentPosition(newSession);
+
+    HapticFeedback.selectionClick();
+
+    _currentSession = newSession;
+    notifyListeners();
+    return true;
+  }
+
   Future<void> _completeSession() async {
     if (_currentSession == null) return;
 
