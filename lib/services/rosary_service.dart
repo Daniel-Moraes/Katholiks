@@ -131,6 +131,45 @@ class RosaryService extends ChangeNotifier {
     return _currentSession!;
   }
 
+  /// Inicia uma sessão completa do Rosário (4 mistérios, 20 dezenas)
+  Future<RosarySession> startCompleteRosarySession() async {
+    final allMysteries = [
+      MysteryType.joyful,
+      MysteryType.luminous,
+      MysteryType.sorrowful,
+      MysteryType.glorious,
+    ];
+
+    // Coleta todos os mistérios dos 4 tipos
+    final List<Mystery> mysteries = [];
+    for (final mysteryType in allMysteries) {
+      mysteries.addAll(_getMysteries(mysteryType));
+    }
+
+    final prayerSteps = _generateCompleteRosarySequence(mysteries);
+
+    _currentSession = RosarySession(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      startTime: DateTime.now(),
+      mysteryType: MysteryType.joyful, // Começa com os gozosos
+      mysteries: mysteries,
+      prayerSteps: prayerSteps,
+      currentMystery: 0,
+      currentDecade: 0,
+      currentPrayer: 0,
+      totalPrayers: prayerSteps.length,
+      completedPrayers: 0,
+      achievedMilestones: [],
+      status: RosarySessionStatus.inProgress,
+      prayerCounts: {},
+    );
+
+    HapticFeedback.lightImpact();
+
+    notifyListeners();
+    return _currentSession!;
+  }
+
   void pauseSession() {
     if (_currentSession != null) {
       _currentSession = _currentSession!.copyWith(
@@ -354,6 +393,71 @@ class RosaryService extends ChangeNotifier {
       ));
     }
 
+    steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.salveRainha));
+
+    return steps;
+  }
+
+  /// Gera a sequência completa do Rosário (4 mistérios, 20 dezenas)
+  List<RosaryPrayerStep> _generateCompleteRosarySequence(
+      List<Mystery> mysteries) {
+    List<RosaryPrayerStep> steps = [];
+
+    // Orações iniciais
+    steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.sinalDaCruz));
+    steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.creio));
+    steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.paiNosso));
+
+    // 3 Ave Marias iniciais
+    for (int i = 0; i < 3; i++) {
+      steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.aveMaria));
+    }
+    steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.gloria));
+
+    // Todos os 20 mistérios (4 tipos x 5 mistérios cada)
+    for (int mysteryIndex = 0;
+        mysteryIndex < mysteries.length;
+        mysteryIndex++) {
+      final mystery = mysteries[mysteryIndex];
+
+      // Pai Nosso para iniciar o mistério
+      steps.add(RosaryPrayerStep(
+        type: PrayerTypeExpanded.paiNosso,
+        mysteryIndex: mysteryIndex,
+        prayerInMystery: 0,
+        mysteryReflection: mystery.reflection,
+        currentMystery: mystery,
+      ));
+
+      // 10 Ave Marias
+      for (int ave = 1; ave <= 10; ave++) {
+        steps.add(RosaryPrayerStep(
+          type: PrayerTypeExpanded.aveMaria,
+          mysteryIndex: mysteryIndex,
+          prayerInMystery: ave,
+          mysteryReflection: mystery.reflection,
+          currentMystery: mystery,
+        ));
+      }
+
+      // Glória ao Pai
+      steps.add(RosaryPrayerStep(
+        type: PrayerTypeExpanded.gloria,
+        mysteryIndex: mysteryIndex,
+        prayerInMystery: 11,
+        currentMystery: mystery,
+      ));
+
+      // Oração de Fátima
+      steps.add(RosaryPrayerStep(
+        type: PrayerTypeExpanded.fatima,
+        mysteryIndex: mysteryIndex,
+        prayerInMystery: 12,
+        currentMystery: mystery,
+      ));
+    }
+
+    // Oração final
     steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.salveRainha));
 
     return steps;

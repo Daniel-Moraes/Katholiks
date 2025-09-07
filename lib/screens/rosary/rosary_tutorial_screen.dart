@@ -27,12 +27,27 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     super.initState();
     _progressController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 1), // Duração inicial, será sobrescrita
+      duration: const Duration(seconds: 1),
     )..addListener(() {
         setState(() {});
       });
 
     _setupAudioListeners();
+
+    // Configura callback para avanço automático
+    _audioService.setOnAudioCompleteCallback(() {
+      if (_autoPlayEnabled &&
+          _rosaryService.currentSession != null &&
+          mounted) {
+        Future.delayed(const Duration(milliseconds: 500), () async {
+          if (mounted &&
+              _autoPlayEnabled &&
+              _rosaryService.currentSession != null) {
+            await _nextPrayer();
+          }
+        });
+      }
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (_autoPlayEnabled &&
@@ -72,6 +87,7 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
   void _updateAudioProgress() {
     final isCurrentlyPlaying = _audioService.isPlaying;
 
+    // Quando o áudio começa
     if (isCurrentlyPlaying && !_wasPlayingLastCheck) {
       _playStartTime = DateTime.now();
       final prayerTitle = _rosaryService.currentSession != null
@@ -83,32 +99,27 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
       _progressController.forward(from: 0.0);
     }
 
+    // Quando o áudio para (sem avanço automático aqui, é tratado pelo callback)
     if (!isCurrentlyPlaying && _wasPlayingLastCheck) {
       _progressController.stop();
 
-      if (_audioPosition >= _audioDuration) {
-        if (_autoPlayEnabled && _rosaryService.currentSession != null) {
-          Future.delayed(const Duration(milliseconds: 800), () async {
-            if (mounted) {
-              await _nextPrayer();
-            }
-          });
-        } else {
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (mounted) {
-              setState(() {
-                _audioPosition = Duration.zero;
-                _playStartTime = null;
-                _progressController.reset();
-              });
-            }
-          });
-        }
-      } else {
-        _playStartTime = null;
+      // Se não for avanço automático, reseta a interface
+      if (!_autoPlayEnabled) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) {
+            setState(() {
+              _audioPosition = Duration.zero;
+              _playStartTime = null;
+              _progressController.reset();
+            });
+          }
+        });
       }
+
+      _playStartTime = null;
     }
 
+    // Atualiza a posição do áudio durante a reprodução
     if (isCurrentlyPlaying && _playStartTime != null) {
       final elapsed = DateTime.now().difference(_playStartTime!);
       _audioPosition = elapsed > _audioDuration ? _audioDuration : elapsed;
@@ -227,7 +238,7 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
             const SizedBox(width: 16),
             Expanded(
               child: Text(
-                _getMysteryDisplayName(session.mysteryType),
+                _getHeaderTitle(session),
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 18,
@@ -345,6 +356,11 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
           if (_getCurrentStep(session)?.isInMystery == true &&
               _getCurrentStep(session)?.currentMystery != null) ...[
             _buildMysterySpecificProgress(session),
+            const SizedBox(height: 12),
+          ],
+          // Mostrar progresso dos 4 mistérios para Rosário completo
+          if (session.mysteries.length == 20) ...[
+            _buildCompleteRosaryProgress(session),
             const SizedBox(height: 12),
           ],
           _buildGeneralProgress(session),
@@ -473,6 +489,114 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
             ),
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildCompleteRosaryProgress(RosarySession session) {
+    // Contar progresso por tipo de mistério
+    final mysteryProgress = <MysteryType, int>{};
+    final mysteryTypes = [
+      MysteryType.joyful,
+      MysteryType.luminous,
+      MysteryType.sorrowful,
+      MysteryType.glorious
+    ];
+
+    // Inicializar contadores
+    for (final type in mysteryTypes) {
+      mysteryProgress[type] = 0;
+    }
+
+    // Contar mistérios completados
+    for (int i = 0;
+        i < session.completedPrayers && i < session.prayerSteps.length;
+        i++) {
+      final step = session.prayerSteps[i];
+      if (step.currentMystery != null) {
+        final type = step.currentMystery!.type;
+        if (!mysteryProgress.containsKey(type)) {
+          mysteryProgress[type] = 0;
+        }
+        // Contar apenas uma vez por mistério (não por oração)
+        if (step.prayerInMystery == 1) {
+          // Primeira Ave Maria do mistério
+          mysteryProgress[type] = mysteryProgress[type]! + 1;
+        }
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Progresso do Rosário:',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        ...mysteryTypes.map((type) {
+          final completed = mysteryProgress[type] ?? 0;
+          final progress = completed / 5.0; // 5 mistérios por tipo
+          final color = _getMysteryColorByType(type);
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 100,
+                  child: Text(
+                    _getMysteryDisplayName(type).replaceAll('Mistérios ', ''),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withOpacity(0.6),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceVariant
+                          .withOpacity(0.4),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: progress,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '$completed/5',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.6),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
       ],
     );
   }
@@ -746,6 +870,25 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     }
   }
 
+  /// Retorna o título do header baseado no mistério atual
+  String _getHeaderTitle(RosarySession session) {
+    final currentStep = _getCurrentStep(session);
+
+    // Se estamos em um mistério específico, mostra o tipo desse mistério
+    if (currentStep?.currentMystery != null) {
+      final mystery = currentStep!.currentMystery!;
+      return _getMysteryDisplayName(mystery.type);
+    }
+
+    // Se não estamos em um mistério específico, verifica se é rosário completo
+    if (session.mysteries.length == 20) {
+      return 'Santo Rosário Completo';
+    }
+
+    // Caso padrão (terço simples)
+    return _getMysteryDisplayName(session.mysteryType);
+  }
+
   RosaryPrayerStep? _getCurrentStep(RosarySession session) {
     if (session.prayerSteps.isEmpty ||
         session.completedPrayers >= session.prayerSteps.length) {
@@ -937,7 +1080,7 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
         case 'pai nosso':
           await _audioService.playPaiNosso();
           break;
-        case 'glória':
+        case 'glória ao pai':
           await _audioService.playGloriaAoPai();
           break;
         case 'oração de fátima':
@@ -1055,5 +1198,18 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
         ],
       ),
     );
+  }
+
+  Color _getMysteryColorByType(MysteryType type) {
+    switch (type) {
+      case MysteryType.joyful:
+        return Colors.amber;
+      case MysteryType.luminous:
+        return Colors.blue;
+      case MysteryType.sorrowful:
+        return Colors.red;
+      case MysteryType.glorious:
+        return Colors.green;
+    }
   }
 }

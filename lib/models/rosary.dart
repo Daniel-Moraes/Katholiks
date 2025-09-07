@@ -219,7 +219,7 @@ enum PrayerTypeExpanded {
   creio('Creio', RosaryPrayers.creio),
   paiNosso('Pai Nosso', RosaryPrayers.paiNosso),
   aveMaria('Ave Maria', RosaryPrayers.aveMaria),
-  gloria('Glória', RosaryPrayers.gloria),
+  gloria('Glória ao pai', RosaryPrayers.gloria),
   fatima('Oração de Fátima', RosaryPrayers.fatima),
   salveRainha('Salve Rainha', RosaryPrayers.salveRainha);
 

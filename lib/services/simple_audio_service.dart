@@ -15,6 +15,7 @@ class SimpleAudioService {
   bool _isPlaying = false;
   String? _currentAudio;
   double _volume = 1.0; // Volume padrão (máximo)
+  void Function()? _onAudioComplete; // Callback para quando o áudio termina
 
   // Lista de orações disponíveis
   final List<String> _availablePrayers = [
@@ -43,7 +44,17 @@ class SimpleAudioService {
       _isPlaying = false;
       _currentAudio = null;
       developer.log('🎵 Áudio finalizado', name: 'SimpleAudioService');
+
+      // Chama o callback se definido
+      if (_onAudioComplete != null) {
+        _onAudioComplete!();
+      }
     });
+  }
+
+  /// Define o callback para quando o áudio termina
+  void setOnAudioCompleteCallback(void Function()? callback) {
+    _onAudioComplete = callback;
   }
 
   /// Inicializa o volume

@@ -363,6 +363,17 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
                     } else {
                       _startNewSession();
                     }
+                  } else if (type == RosaryType.santoRosario) {
+                    if (isActive) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const RosaryTutorialScreen(),
+                        ),
+                      );
+                    } else {
+                      _startCompleteRosarySession();
+                    }
                   }
                 }
               : null,
@@ -754,6 +765,30 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erro ao iniciar terço: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _startCompleteRosarySession() async {
+    try {
+      await _rosaryService.startCompleteRosarySession();
+
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const RosaryTutorialScreen(),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao iniciar rosário completo: $e'),
             backgroundColor: AppColors.error,
           ),
         );
