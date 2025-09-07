@@ -34,7 +34,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
 
     _setupAudioListeners();
 
-    // Configura callback para avanço automático
     _audioService.setOnAudioCompleteCallback(() {
       if (_autoPlayEnabled &&
           _rosaryService.currentSession != null &&
@@ -66,6 +65,13 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
   @override
   void dispose() {
     _progressController.dispose();
+
+    if (_rosaryService.currentSession != null &&
+        _rosaryService.currentSession!.status ==
+            RosarySessionStatus.inProgress) {
+      _rosaryService.clearCurrentSession();
+    }
+
     super.dispose();
   }
 
@@ -87,7 +93,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
   void _updateAudioProgress() {
     final isCurrentlyPlaying = _audioService.isPlaying;
 
-    // Quando o áudio começa
     if (isCurrentlyPlaying && !_wasPlayingLastCheck) {
       _playStartTime = DateTime.now();
       final prayerTitle = _rosaryService.currentSession != null
@@ -99,11 +104,9 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
       _progressController.forward(from: 0.0);
     }
 
-    // Quando o áudio para (sem avanço automático aqui, é tratado pelo callback)
     if (!isCurrentlyPlaying && _wasPlayingLastCheck) {
       _progressController.stop();
 
-      // Se não for avanço automático, reseta a interface
       if (!_autoPlayEnabled) {
         Future.delayed(const Duration(milliseconds: 300), () {
           if (mounted) {
@@ -119,7 +122,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
       _playStartTime = null;
     }
 
-    // Atualiza a posição do áudio durante a reprodução
     if (isCurrentlyPlaying && _playStartTime != null) {
       final elapsed = DateTime.now().difference(_playStartTime!);
       _audioPosition = elapsed > _audioDuration ? _audioDuration : elapsed;
@@ -358,7 +360,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
             _buildMysterySpecificProgress(session),
             const SizedBox(height: 12),
           ],
-          // Mostrar progresso dos 4 mistérios para Rosário completo
           if (session.mysteries.length == 20) ...[
             _buildCompleteRosaryProgress(session),
             const SizedBox(height: 12),
@@ -503,12 +504,10 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
       MysteryType.glorious
     ];
 
-    // Inicializar contadores
     for (final type in mysteryTypes) {
       mysteryProgress[type] = 0;
     }
 
-    // Contar mistérios completados
     for (int i = 0;
         i < session.completedPrayers && i < session.prayerSteps.length;
         i++) {
@@ -518,9 +517,7 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
         if (!mysteryProgress.containsKey(type)) {
           mysteryProgress[type] = 0;
         }
-        // Contar apenas uma vez por mistério (não por oração)
         if (step.prayerInMystery == 1) {
-          // Primeira Ave Maria do mistério
           mysteryProgress[type] = mysteryProgress[type]! + 1;
         }
       }
@@ -870,22 +867,18 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     }
   }
 
-  /// Retorna o título do header baseado no mistério atual
   String _getHeaderTitle(RosarySession session) {
     final currentStep = _getCurrentStep(session);
 
-    // Se estamos em um mistério específico, mostra o tipo desse mistério
     if (currentStep?.currentMystery != null) {
       final mystery = currentStep!.currentMystery!;
       return _getMysteryDisplayName(mystery.type);
     }
 
-    // Se não estamos em um mistério específico, verifica se é rosário completo
     if (session.mysteries.length == 20) {
       return 'Santo Rosário Completo';
     }
 
-    // Caso padrão (terço simples)
     return _getMysteryDisplayName(session.mysteryType);
   }
 
@@ -1036,7 +1029,6 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
 
       if (_audioService.currentAudio != null && !_audioService.isPlaying) {
         await _audioService.resume();
-        // Retomar animação do ponto atual
         if (_progressController.value < 1.0) {
           _progressController.forward();
         }

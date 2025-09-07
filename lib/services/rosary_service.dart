@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/scheduler.dart';
 import '../models/rosary.dart';
 import '../models/achievement.dart';
 import 'rosary_firestore_service.dart';
@@ -41,7 +42,9 @@ class RosaryService extends ChangeNotifier {
       } else {
         _stats = await _firestoreService.createInitialStats();
       }
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     } catch (e) {
       print('Erro ao inicializar RosaryService: $e');
       _stats = const RosaryStats(
@@ -55,7 +58,9 @@ class RosaryService extends ChangeNotifier {
         totalPoints: 0,
         averageSessionDuration: 0,
       );
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 
@@ -105,6 +110,8 @@ class RosaryService extends ChangeNotifier {
   }
 
   Future<RosarySession> startRosarySession({MysteryType? mysteryType}) async {
+    _currentSession = null;
+
     final selectedMystery = mysteryType ?? getTodaysMystery();
     final mysteries = _getMysteries(selectedMystery);
     final prayerSteps = _generateRosarySequence(mysteries);
@@ -127,12 +134,15 @@ class RosaryService extends ChangeNotifier {
 
     HapticFeedback.lightImpact();
 
-    notifyListeners();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
     return _currentSession!;
   }
 
-  /// Inicia uma sessão completa do Rosário (4 mistérios, 20 dezenas)
   Future<RosarySession> startCompleteRosarySession() async {
+    _currentSession = null;
+
     final allMysteries = [
       MysteryType.joyful,
       MysteryType.luminous,
@@ -140,7 +150,6 @@ class RosaryService extends ChangeNotifier {
       MysteryType.glorious,
     ];
 
-    // Coleta todos os mistérios dos 4 tipos
     final List<Mystery> mysteries = [];
     for (final mysteryType in allMysteries) {
       mysteries.addAll(_getMysteries(mysteryType));
@@ -166,7 +175,9 @@ class RosaryService extends ChangeNotifier {
 
     HapticFeedback.lightImpact();
 
-    notifyListeners();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
     return _currentSession!;
   }
 
@@ -175,7 +186,9 @@ class RosaryService extends ChangeNotifier {
       _currentSession = _currentSession!.copyWith(
         status: RosarySessionStatus.paused,
       );
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 
@@ -184,8 +197,17 @@ class RosaryService extends ChangeNotifier {
       _currentSession = _currentSession!.copyWith(
         status: RosarySessionStatus.inProgress,
       );
-      notifyListeners();
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
+  }
+
+  void clearCurrentSession() {
+    _currentSession = null;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   Future<bool> nextPrayer() async {
@@ -210,7 +232,9 @@ class RosaryService extends ChangeNotifier {
     }
 
     _currentSession = newSession;
-    notifyListeners();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
     return false;
   }
 
@@ -229,7 +253,9 @@ class RosaryService extends ChangeNotifier {
     HapticFeedback.selectionClick();
 
     _currentSession = newSession;
-    notifyListeners();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
     return true;
   }
 
@@ -247,12 +273,12 @@ class RosaryService extends ChangeNotifier {
 
     HapticFeedback.heavyImpact();
 
-    _currentSession = completedSession.copyWith(
+    final sessionToSave = completedSession.copyWith(
       achievedMilestones: achievements,
     );
 
     try {
-      await _firestoreService.saveRosarySession(_currentSession!);
+      await _firestoreService.saveRosarySession(sessionToSave);
       await _firestoreService.saveUserStats(_stats);
 
       for (final achievement in achievements) {
@@ -262,7 +288,10 @@ class RosaryService extends ChangeNotifier {
       print('Erro ao salvar sessão no Firebase: $e');
     }
 
-    notifyListeners();
+    _currentSession = null;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   Future<void> _updateStats(RosarySession session) async {
@@ -398,29 +427,24 @@ class RosaryService extends ChangeNotifier {
     return steps;
   }
 
-  /// Gera a sequência completa do Rosário (4 mistérios, 20 dezenas)
   List<RosaryPrayerStep> _generateCompleteRosarySequence(
       List<Mystery> mysteries) {
     List<RosaryPrayerStep> steps = [];
 
-    // Orações iniciais
     steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.sinalDaCruz));
     steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.creio));
     steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.paiNosso));
 
-    // 3 Ave Marias iniciais
     for (int i = 0; i < 3; i++) {
       steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.aveMaria));
     }
     steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.gloria));
 
-    // Todos os 20 mistérios (4 tipos x 5 mistérios cada)
     for (int mysteryIndex = 0;
         mysteryIndex < mysteries.length;
         mysteryIndex++) {
       final mystery = mysteries[mysteryIndex];
 
-      // Pai Nosso para iniciar o mistério
       steps.add(RosaryPrayerStep(
         type: PrayerTypeExpanded.paiNosso,
         mysteryIndex: mysteryIndex,
@@ -429,7 +453,6 @@ class RosaryService extends ChangeNotifier {
         currentMystery: mystery,
       ));
 
-      // 10 Ave Marias
       for (int ave = 1; ave <= 10; ave++) {
         steps.add(RosaryPrayerStep(
           type: PrayerTypeExpanded.aveMaria,
@@ -440,7 +463,6 @@ class RosaryService extends ChangeNotifier {
         ));
       }
 
-      // Glória ao Pai
       steps.add(RosaryPrayerStep(
         type: PrayerTypeExpanded.gloria,
         mysteryIndex: mysteryIndex,
@@ -448,7 +470,6 @@ class RosaryService extends ChangeNotifier {
         currentMystery: mystery,
       ));
 
-      // Oração de Fátima
       steps.add(RosaryPrayerStep(
         type: PrayerTypeExpanded.fatima,
         mysteryIndex: mysteryIndex,
@@ -457,7 +478,6 @@ class RosaryService extends ChangeNotifier {
       ));
     }
 
-    // Oração final
     steps.add(const RosaryPrayerStep(type: PrayerTypeExpanded.salveRainha));
 
     return steps;

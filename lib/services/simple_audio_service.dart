@@ -6,7 +6,6 @@ class SimpleAudioService {
   static final SimpleAudioService _instance = SimpleAudioService._internal();
   factory SimpleAudioService() => _instance;
   SimpleAudioService._internal() {
-    // Inicializa com volume alto
     _initializeVolume();
     _setupAudioPlayerListeners();
   }
@@ -14,10 +13,9 @@ class SimpleAudioService {
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
   String? _currentAudio;
-  double _volume = 1.0; // Volume padrão (máximo)
-  void Function()? _onAudioComplete; // Callback para quando o áudio termina
+  double _volume = 1.0;
+  void Function()? _onAudioComplete;
 
-  // Lista de orações disponíveis
   final List<String> _availablePrayers = [
     'sinal-da-cruz',
     'creio',
@@ -45,7 +43,6 @@ class SimpleAudioService {
       _currentAudio = null;
       developer.log('🎵 Áudio finalizado', name: 'SimpleAudioService');
 
-      // Chama o callback se definido
       if (_onAudioComplete != null) {
         _onAudioComplete!();
       }
