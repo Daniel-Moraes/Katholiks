@@ -221,7 +221,9 @@ enum PrayerTypeExpanded {
   aveMaria('Ave Maria', RosaryPrayers.aveMaria),
   gloria('Glória ao pai', RosaryPrayers.gloria),
   fatima('Oração de Fátima', RosaryPrayers.fatima),
-  salveRainha('Salve Rainha', RosaryPrayers.salveRainha);
+  salveRainha('Salve Rainha', RosaryPrayers.salveRainha),
+  mysteryIntroduction(
+      'Contemplação do Mistério', ''); // Texto será definido dinamicamente
 
   const PrayerTypeExpanded(this.title, this.text);
   final String title;
@@ -235,6 +237,7 @@ class RosaryPrayerStep {
   final int prayerInMystery;
   final String? mysteryReflection;
   final Mystery? currentMystery;
+  final String? customText; // Para textos dinâmicos como introdução de mistério
 
   const RosaryPrayerStep({
     required this.type,
@@ -242,8 +245,12 @@ class RosaryPrayerStep {
     this.prayerInMystery = -1,
     this.mysteryReflection,
     this.currentMystery,
+    this.customText,
   });
 
   bool get isInMystery => mysteryIndex >= 0;
   bool get isDecadePrayer => prayerInMystery >= 0;
+
+  /// Retorna o texto a ser exibido (customText tem prioridade sobre type.text)
+  String get displayText => customText ?? type.text;
 }

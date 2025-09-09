@@ -389,6 +389,17 @@ class RosaryService extends ChangeNotifier {
         mysteryIndex++) {
       final mystery = mysteries[mysteryIndex];
 
+      // Adiciona a introdução do mistério como uma oração separada
+      steps.add(RosaryPrayerStep(
+        type: PrayerTypeExpanded.mysteryIntroduction,
+        mysteryIndex: mysteryIndex,
+        prayerInMystery: -1, // Não faz parte da dezena
+        mysteryReflection: mystery.reflection,
+        currentMystery: mystery,
+        customText:
+            'No ${mystery.title} nós contemplamos ${mystery.description}',
+      ));
+
       steps.add(RosaryPrayerStep(
         type: PrayerTypeExpanded.paiNosso,
         mysteryIndex: mysteryIndex,
@@ -444,6 +455,17 @@ class RosaryService extends ChangeNotifier {
         mysteryIndex < mysteries.length;
         mysteryIndex++) {
       final mystery = mysteries[mysteryIndex];
+
+      // Adiciona a introdução do mistério como uma oração separada
+      steps.add(RosaryPrayerStep(
+        type: PrayerTypeExpanded.mysteryIntroduction,
+        mysteryIndex: mysteryIndex,
+        prayerInMystery: -1, // Não faz parte da dezena
+        mysteryReflection: mystery.reflection,
+        currentMystery: mystery,
+        customText:
+            'No ${mystery.title} nós contemplamos ${mystery.description}',
+      ));
 
       steps.add(RosaryPrayerStep(
         type: PrayerTypeExpanded.paiNosso,

@@ -214,4 +214,10 @@ class SimpleAudioService {
   Future<void> playSalveRainha() async {
     await playAssetAudio('audio/rosary/Charon/salve-rainha.wav');
   }
+
+  Future<void> playMysteryIntroduction() async {
+    // Por enquanto, pode ser um áudio genérico ou silêncio
+    // Futuramente pode ter áudios específicos para cada mistério
+    await playAssetAudio('audio/rosary/Charon/mystery-introduction.wav');
+  }
 }

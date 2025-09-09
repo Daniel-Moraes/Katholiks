@@ -590,7 +590,7 @@ class _GamifiedHomePageState extends State<GamifiedHomePage> {
                 gradient: LinearGradient(
                   colors: [AppColors.error, AppColors.error.withOpacity(0.7)],
                 ),
-                onTap: () {},
+                onTap: () => context.push('/bible'),
               ),
             ],
           ),
@@ -828,7 +828,7 @@ class _GamifiedHomePageState extends State<GamifiedHomePage> {
                 color: AppColors.primary.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.emoji_events_outlined,
                 size: 24,
                 color: AppColors.primary,

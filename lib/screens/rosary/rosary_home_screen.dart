@@ -196,9 +196,9 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
                         color: AppColors.warning,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(
+                      child: const Text(
                         '+50 pts',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -217,7 +217,7 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
                         backgroundColor:
                             Theme.of(context).colorScheme.surfaceVariant,
                         valueColor:
-                            AlwaysStoppedAnimation<Color>(AppColors.warning),
+                            const AlwaysStoppedAnimation<Color>(AppColors.warning),
                         minHeight: 6,
                         borderRadius: BorderRadius.circular(3),
                       ),
@@ -225,7 +225,7 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
                     const SizedBox(width: 12),
                     Text(
                       '${(todayProgress * 100).toInt()}%',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: AppColors.warning,
@@ -557,7 +557,7 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
                 children: [
                   Text(
                     'Nível $currentLevel',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
@@ -585,7 +585,7 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.stars,
                       size: 16,
                       color: AppColors.primary,
@@ -593,7 +593,7 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
                     const SizedBox(width: 4),
                     Text(
                       '${stats.totalPoints} pts',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
@@ -622,7 +622,7 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
                   ),
                   Text(
                     '$progressInLevel / $pointsNeededForLevel pts',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: AppColors.primary,
@@ -634,7 +634,7 @@ class _RosaryHomeScreenState extends State<RosaryHomeScreen>
               LinearProgressIndicator(
                 value: progressPercentage,
                 backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
                 minHeight: 8,
                 borderRadius: BorderRadius.circular(4),
               ),

@@ -8,6 +8,7 @@ import '../screens/home/home_screen.dart';
 import '../screens/home/profile_screen.dart';
 import '../screens/rosary/rosary_home_screen.dart';
 import '../screens/rosary/rosary_tutorial_screen.dart';
+import '../screens/simple_bible_screen.dart';
 import '../services/auth_service.dart';
 
 class AppRoutes {
@@ -20,6 +21,7 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String rosary = '/rosary';
   static const String rosaryTutorial = '/rosary/tutorial';
+  static const String bible = '/bible';
 
   static final GoRouter router = GoRouter(
     initialLocation: splash,
@@ -97,6 +99,13 @@ class AppRoutes {
           return const RosaryTutorialScreen();
         },
       ),
+      GoRoute(
+        path: bible,
+        name: 'bible',
+        builder: (BuildContext context, GoRouterState state) {
+          return const SimpleBibleScreen();
+        },
+      ),
     ],
 
     errorBuilder: (context, state) => Scaffold(
@@ -145,11 +154,13 @@ extension AppNavigationHelper on BuildContext {
   void goToRegister() => go(AppRoutes.register);
   void goToHome() => go(AppRoutes.home);
   void goToProfile() => go(AppRoutes.profile);
+  void goToBible() => go(AppRoutes.bible);
 
   // Push navigation (keeps previous route in stack)
   void pushLogin() => push(AppRoutes.login);
   void pushRegister() => push(AppRoutes.register);
   void pushProfile() => push(AppRoutes.profile);
+  void pushBible() => push(AppRoutes.bible);
 
   // Replace navigation (replaces current route)
   void replaceWithLogin() => pushReplacement(AppRoutes.login);

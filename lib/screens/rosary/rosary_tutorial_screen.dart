@@ -150,6 +150,8 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
         return const Duration(seconds: 10);
       case 'salve rainha':
         return const Duration(seconds: 37);
+      case 'contemplação do mistério':
+        return const Duration(seconds: 15); // Duração estimada para leitura
       default:
         return const Duration(seconds: 0);
     }
@@ -949,7 +951,7 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     if (session.prayerSteps.isNotEmpty &&
         session.completedPrayers < session.prayerSteps.length) {
       final currentStep = session.prayerSteps[session.completedPrayers];
-      return currentStep.type.text;
+      return currentStep.displayText; // Usa o getter que prioriza customText
     }
     return PrayerTypeExpanded.aveMaria.text;
   }
@@ -958,6 +960,12 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
     if (session.prayerSteps.isNotEmpty &&
         session.completedPrayers < session.prayerSteps.length) {
       final currentStep = session.prayerSteps[session.completedPrayers];
+
+      // Se é introdução de mistério, usa o título do mistério
+      if (currentStep.type == PrayerTypeExpanded.mysteryIntroduction) {
+        return currentStep.currentMystery?.title ?? currentStep.type.title;
+      }
+
       return currentStep.type.title;
     }
     return 'Ave Maria';
@@ -1080,6 +1088,9 @@ class _RosaryTutorialScreenState extends State<RosaryTutorialScreen>
           break;
         case 'salve rainha':
           await _audioService.playSalveRainha();
+          break;
+        case 'contemplação do mistério':
+          await _audioService.playMysteryIntroduction();
           break;
         default:
           return;

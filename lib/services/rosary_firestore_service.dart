@@ -112,11 +112,11 @@ class RosaryFirestoreService {
 
     print(
         'RosaryFirestoreService: Criando estatísticas iniciais para usuário: $_currentUserId');
-    final initialStats = RosaryStats(
+    const initialStats = RosaryStats(
       totalRosariesCompleted: 0,
       currentStreak: 0,
       longestStreak: 0,
-      totalPrayerTime: const Duration(seconds: 0),
+      totalPrayerTime: Duration(seconds: 0),
       mysteriesCompleted: {
         MysteryType.joyful: 0,
         MysteryType.sorrowful: 0,
