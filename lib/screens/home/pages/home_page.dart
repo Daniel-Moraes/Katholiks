@@ -5,6 +5,7 @@ import '../../../widgets/rosary_icon.dart';
 import '../../../services/rosary_service.dart';
 import '../../../models/rosary.dart';
 import '../../../models/achievement.dart';
+import '../../prayers/prayers_list_page.dart';
 
 class GamifiedHomePage extends StatefulWidget {
   final Animation<double> pulseAnimation;
@@ -557,19 +558,19 @@ class _GamifiedHomePageState extends State<GamifiedHomePage> {
                 ),
                 onTap: () => context.push('/rosary'),
               ),
-              _buildActionCard(
-                title: 'Santo Rosário',
-                subtitle: '20 mistérios',
-                icon: const Icon(Icons.auto_awesome,
-                    size: 32, color: Colors.white),
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.success,
-                    AppColors.success.withOpacity(0.7)
-                  ],
-                ),
-                onTap: () {},
-              ),
+              // _buildActionCard(
+              //   title: 'Santo Rosário',
+              //   subtitle: '20 mistérios',
+              //   icon: const Icon(Icons.auto_awesome,
+              //       size: 32, color: Colors.white),
+              //   gradient: LinearGradient(
+              //     colors: [
+              //       AppColors.success,
+              //       AppColors.success.withOpacity(0.7)
+              //     ],
+              //   ),
+              //   onTap: () {},
+              // ),
               _buildActionCard(
                 title: 'Orações',
                 subtitle: 'Biblioteca completa',
@@ -581,7 +582,13 @@ class _GamifiedHomePageState extends State<GamifiedHomePage> {
                     AppColors.warning.withOpacity(0.7)
                   ],
                 ),
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => PrayersListPage(),
+                    ),
+                  );
+                },
               ),
               _buildActionCard(
                 title: 'Bíblia',
